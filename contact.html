@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact - Chamomile Media</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/component.css">
+  <link rel="stylesheet" href="css/animations.css">
+
+  <style>
+    .contact-shell {
+        padding: 140px 0 100px;
+    }
+    .contact-layout {
+        display: grid;
+        grid-template-columns: 0.9fr 1.1fr;
+        gap: 28px;
+        align-items: start;
+    }
+    .contact-panel,
+    .contact-card {
+        background: rgba(255, 251, 245, 0.8);
+        backdrop-filter: blur(14px);
+        border: 1px solid rgba(var(--ink-rgb), 0.08);
+        box-shadow: var(--shadow-soft);
+        border-radius: 28px;
+    }
+    .contact-panel {
+        padding: 32px;
+        position: sticky;
+        top: 110px;
+    }
+    .contact-card {
+        padding: 34px;
+    }
+    .contact-card h1 {
+        margin-bottom: 12px;
+        font-size: clamp(2rem, 3vw, 2.8rem);
+    }
+    .contact-card > p,
+    .contact-panel p,
+    .contact-option span,
+    .contact-note,
+    .field-group p,
+    .success-panel p {
+        color: var(--text-muted);
+    }
+    .contact-panel__eyebrow,
+    .contact-label {
+        display: inline-flex;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        color: var(--petal-deep);
+        font-weight: 700;
+    }
+    .contact-panel h2 {
+        margin: 14px 0 16px;
+        font-size: 1.7rem;
+    }
+    .contact-points {
+        display: grid;
+        gap: 14px;
+        margin: 26px 0;
+    }
+    .contact-point {
+        display: grid;
+        gap: 4px;
+        padding: 16px 18px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.5);
+    }
+    .contact-point strong,
+    .contact-option strong {
+        color: var(--text-main);
+    }
+    .contact-options {
+        display: grid;
+        gap: 14px;
+        margin-top: 24px;
+    }
+    .contact-option {
+        padding: 18px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.46);
+        border: 1px solid rgba(var(--ink-rgb), 0.06);
+        display: grid;
+        gap: 8px;
+    }
+    .contact-option a {
+        color: var(--green-main);
+        font-weight: 700;
+    }
+    .contact-form {
+        display: grid;
+        gap: 22px;
+        margin-top: 28px;
+    }
+    .field-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+    .field-group {
+        display: grid;
+        gap: 8px;
+    }
+    .field-group--full {
+        grid-column: 1 / -1;
+    }
+    input, textarea, select {
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid rgba(var(--ink-rgb), 0.12);
+        border-radius: 16px;
+        background: rgba(255, 251, 245, 0.92);
+        font-family: inherit;
+        color: var(--text-main);
+    }
+    textarea {
+        min-height: 130px;
+        resize: vertical;
+    }
+    .service-pill-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .service-pill {
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(var(--brand-primary-rgb), 0.18);
+        background: rgba(255, 255, 255, 0.5);
+        color: var(--text-main);
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    }
+    .service-pill:hover,
+    .service-pill.is-selected {
+        transform: translateY(-1px);
+        background: rgba(var(--brand-primary-rgb), 0.12);
+        border-color: rgba(var(--brand-primary-rgb), 0.36);
+        color: var(--green-main);
+    }
+    .contact-submit {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        flex-wrap: wrap;
+    }
+    .contact-submit .btn {
+        min-width: 210px;
+    }
+    .contact-note {
+        max-width: 360px;
+        font-size: 0.92rem;
+    }
+    .contact-status {
+        margin: 12px 0 0;
+        font-size: 0.92rem;
+        color: var(--text-muted);
+        min-height: 1.4em;
+    }
+    .contact-status[data-state="error"] {
+        color: #a3483f;
+    }
+    .contact-status[data-state="success"] {
+        color: var(--green-main);
+    }
+    @media (max-width: 900px) {
+        .contact-layout {
+            grid-template-columns: 1fr;
+            gap: 22px;
+        }
+        .contact-panel {
+            position: static;
+        }
+    }
+    @media (max-width: 768px) {
+        .contact-shell {
+            padding: 116px 0 72px;
+        }
+        .contact-card,
+        .contact-panel {
+            padding: 24px;
+            border-radius: 24px;
+        }
+        .contact-card h1 {
+            font-size: clamp(1.9rem, 9vw, 2.4rem);
+        }
+        .contact-panel h2 {
+            font-size: 1.5rem;
+            margin-bottom: 14px;
+        }
+        .field-grid {
+            grid-template-columns: 1fr;
+        }
+        .contact-form {
+            gap: 18px;
+            margin-top: 24px;
+        }
+        .contact-points,
+        .contact-options {
+            gap: 12px;
+        }
+        .contact-point,
+        .contact-option {
+            padding: 16px;
+            border-radius: 18px;
+        }
+        .service-pill-group {
+            gap: 8px;
+        }
+        .service-pill {
+            padding: 9px 12px;
+            font-size: 0.92rem;
+        }
+        .contact-submit {
+            align-items: stretch;
+        }
+        .contact-submit .btn {
+            width: 100%;
+            min-width: 0;
+        }
+        .contact-note {
+            max-width: none;
+            font-size: 0.9rem;
+        }
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <div class="logo">
+      <a href="index.html" class="brand-lockup" aria-label="Chamomile Media home">
+        <img
+          src="assets/images/chamomile-logo.jpg"
+          alt="Chamomile Media logo"
+          class="brand-mark"
+        />
+        <span class="brand-copy">
+          <strong>Chamomile Media</strong>
+          <small>Digital Marketing Agency</small>
+        </span>
+      </a>
+    </div>
+    <nav class="primary-nav">
+      <a href="index.html">Back to Home</a>
+    </nav>
+    <button type="button" class="menu-toggle" aria-label="Toggle navigation">&#9776;</button>
+  </div>
+</header>
+
+<main class="contact-shell">
+  <div class="container contact-layout">
+    <aside class="contact-panel">
+      <span class="contact-panel__eyebrow">Start a Project</span>
+      <h2>Let's shape a calmer, stronger digital presence.</h2>
+      <p>
+        Share what you are building, where the brand feels stuck, and what kind
+        of support would be most valuable right now.
+      </p>
+
+      <div class="contact-points">
+        <div class="contact-point">
+          <strong>Best fit</strong>
+          <span>Brands that need strategy, sharper creative, and clearer conversion flow.</span>
+        </div>
+        <div class="contact-point">
+          <strong>Typical support</strong>
+          <span>Branding, content systems, websites, launches, and growth campaigns.</span>
+        </div>
+        <div class="contact-point">
+          <strong>How we work</strong>
+          <span>Collaborative, intentional, and focused on systems that last beyond launch with Kritikaa Rajpurohit leading the brand vision.</span>
+        </div>
+      </div>
+
+      <div class="contact-options">
+        <div class="contact-option">
+          <strong>Prefer Instagram?</strong>
+          <span>Send a quick DM and we can continue the conversation there.</span>
+          <a href="https://www.instagram.com/chamomile.media/" target="_blank" rel="noreferrer">
+            Open Instagram
+          </a>
+        </div>
+        <div class="contact-option">
+          <strong>What helps most</strong>
+          <span>Tell us your current goal, your ideal launch window, and what already exists.</span>
+        </div>
+      </div>
+    </aside>
+
+    <section class="contact-card" id="contact-card">
+      <div class="contact-brand">
+        <img
+          src="assets/images/chamomile-logo.jpg"
+          alt="Chamomile Media logo"
+          class="contact-brand__mark"
+        />
+        <div class="contact-brand__copy">
+          <strong>Chamomile Media</strong>
+          <span>Branding, content, social, and web</span>
+        </div>
+      </div>
+      <h1>Tell us what you're building.</h1>
+
+      <form
+        class="contact-form"
+        id="contact-form"
+        name="contact-inquiry"
+        method="POST"
+        action="/thank-you.html"
+        netlify
+        data-netlify="true"
+        netlify-honeypot="bot-field"
+        data-form-id="contact-form"
+      >
+        <input type="hidden" name="formId" value="contact-form">
+        <input type="hidden" name="form-name" value="contact-inquiry">
+        <input type="hidden" name="subject" value="New Chamomile Media Inquiry">
+        <p hidden>
+          <label>
+            Don't fill this out if you're human:
+            <input name="bot-field">
+          </label>
+        </p>
+        <div class="field-grid">
+          <div class="field-group">
+            <label class="contact-label" for="contact-name">Name</label>
+            <input id="contact-name" name="name" type="text" placeholder="Your name" required>
+          </div>
+          <div class="field-group">
+            <label class="contact-label" for="contact-email">Email</label>
+            <input id="contact-email" name="email" type="email" placeholder="name@company.com" required>
+          </div>
+          <div class="field-group field-group--full">
+            <label class="contact-label" for="contact-phone">Phone number</label>
+            <input
+              id="contact-phone"
+              name="phone"
+              type="tel"
+              inputmode="tel"
+              autocomplete="tel"
+              placeholder="+91 98765 43210"
+            >
+          </div>
+          <div class="field-group">
+            <label class="contact-label" for="contact-company">Brand or company</label>
+            <input id="contact-company" name="company" type="text" placeholder="Your brand name">
+          </div>
+          <div class="field-group">
+            <label class="contact-label" for="contact-timeline">Ideal timeline</label>
+            <select id="contact-timeline" name="timeline">
+              <option value="">Choose a timeline</option>
+              <option>ASAP</option>
+              <option>Within 2-4 weeks</option>
+              <option>Within 1-2 months</option>
+              <option>Just exploring</option>
+            </select>
+          </div>
+          <div class="field-group field-group--full">
+            <label class="contact-label">Services you need</label>
+            <div class="service-pill-group" id="service-pill-group">
+              <button class="service-pill" type="button" data-service="Brand Strategy">Brand Strategy</button>
+              <button class="service-pill" type="button" data-service="Social Media">Social Media</button>
+              <button class="service-pill" type="button" data-service="Content Creation">Content Creation</button>
+              <button class="service-pill" type="button" data-service="Website Design">Website Design</button>
+              <button class="service-pill" type="button" data-service="Performance Marketing">Performance Marketing</button>
+              <button class="service-pill" type="button" data-service="SEO">SEO</button>
+            </div>
+            <input id="contact-services" name="services" type="hidden">
+          </div>
+          <div class="field-group">
+            <label class="contact-label" for="contact-budget">Budget range</label>
+            <select id="contact-budget" name="budget">
+              <option value="">Choose a range</option>
+              <option>Under INR 25k</option>
+              <option>INR 25k-50k</option>
+              <option>INR 50k-1L</option>
+              <option>INR 1L+</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="contact-label" for="contact-goal">Main goal</label>
+            <select id="contact-goal" name="goal">
+              <option value="">Choose a goal</option>
+              <option>Launch a new brand</option>
+              <option>Refresh positioning</option>
+              <option>Improve leads or sales</option>
+              <option>Build a better website</option>
+              <option>Create a stronger content system</option>
+            </select>
+          </div>
+          <div class="field-group field-group--full">
+            <label class="contact-label" for="contact-message">Project brief</label>
+            <textarea
+              id="contact-message"
+              name="message"
+              placeholder="Tell us about your brand, what feels messy right now, and what result you want next."
+              required
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="contact-submit">
+          <button class="btn btn-primary" type="submit">Send Inquiry</button>
+        </div>
+        <p class="contact-status" id="contact-status" aria-live="polite"></p>
+      </form>
+    </section>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <a href="index.html" class="brand-lockup" aria-label="Chamomile Media home">
+        <img
+          src="assets/images/chamomile-logo.jpg"
+          alt="Chamomile Media logo"
+          class="brand-mark"
+        />
+        <span class="brand-copy">
+          <strong>Chamomile Media</strong>
+          <small>Digital Marketing Agency</small>
+        </span>
+      </a>
+      <p>
+        Strategy, branding, content, and websites designed to help modern brands
+        look sharper and convert better.
+      </p>
+    </div>
+    <div class="footer-column">
+      <span class="footer-title">Navigate</span>
+      <a href="index.html">Home</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#services">Services</a>
+      <a href="index.html#work">Work</a>
+    </div>
+    
+    <div class="footer-column">
+      <span class="footer-title">Connect</span>
+      <a href="https://www.instagram.com/chamomile.media/" target="_blank" rel="noreferrer">
+        Instagram
+      </a>
+      <a href="index.html#proof">Proof</a>
+      <span>Available for new brand and growth partnerships</span>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="container">
+      <span>&copy; 2026 Chamomile Media. All rights reserved.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
+<script src="js/contact.js"></script>
+
+</body>
+</html>

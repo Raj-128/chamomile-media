@@ -1,0 +1,248 @@
+html.reveal-pending .reveal,
+html.reveal-pending .reveal-step {
+  opacity: 0;
+  transform: translateY(30px) scale(0.985);
+  filter: blur(10px);
+}
+
+@keyframes drift {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes auraPulse {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.96);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translate3d(-8px, -12px, 0) scale(1.08);
+    opacity: 0.78;
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(0.96);
+    opacity: 0.45;
+  }
+}
+
+@keyframes sweepSheen {
+  0% {
+    transform: translateX(-170%) skewX(-18deg);
+  }
+  100% {
+    transform: translateX(170%) skewX(-18deg);
+  }
+}
+
+@keyframes clientMarquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: -30% auto -30% -45%;
+  width: 42%;
+  background: linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.42), transparent);
+  transform: translateX(-170%) skewX(-18deg);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.btn:hover::before,
+.btn:focus-visible::before {
+  animation: sweepSheen 0.95s ease;
+}
+
+.hero-rotator,
+.hero-card,
+.service-stage,
+.work-spotlight,
+.client-showcase,
+.service-detail-card,
+.testimonial-card,
+.proof-strip__item,
+.contact-card,
+.contact-panel {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-card > *,
+.hero-rotator > *,
+.service-stage > *,
+.work-spotlight > *,
+.client-showcase > *,
+.service-detail-card > *,
+.testimonial-card > *,
+.proof-strip__item > *,
+.contact-card > *,
+.contact-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-rotator::after,
+.hero-card::after,
+.service-stage::after,
+.work-spotlight::after,
+.client-showcase::after,
+.service-detail-card::after,
+.testimonial-card::after,
+.proof-strip__item::after,
+.contact-card::after,
+.contact-panel::after {
+  content: "";
+  position: absolute;
+  right: -14%;
+  bottom: -42%;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--brand-primary-rgb), 0.16), transparent 72%);
+  pointer-events: none;
+  z-index: 0;
+  animation: auraPulse 10s ease-in-out infinite;
+}
+
+.hero-rotator::after {
+  right: auto;
+  left: -20%;
+  top: -95%;
+  bottom: auto;
+  width: 44%;
+  height: 260%;
+  border-radius: 999px;
+  background: linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.34), transparent);
+  animation: sweepSheen 8s ease-in-out infinite;
+}
+
+.hero-card--secondary::after,
+.client-showcase::after,
+.proof-strip__item::after {
+  background: radial-gradient(circle, rgba(var(--brand-accent-rgb), 0.18), transparent 72%);
+}
+
+.interactive-card,
+.service-stage,
+.service-detail-card,
+.testimonial-card,
+.proof-strip__item,
+.client-logo-card,
+.work-spotlight,
+.contact-card,
+.contact-panel,
+.contact-point,
+.contact-option {
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .service-detail-card:hover,
+  .testimonial-card:hover,
+  .proof-strip__item:hover,
+  .client-logo-card:hover,
+  .work-spotlight:hover,
+  .contact-card:hover,
+  .contact-panel:hover,
+  .contact-point:hover,
+  .contact-option:hover {
+    box-shadow: var(--shadow-strong);
+  }
+}
+
+.site-footer {
+  position: relative;
+  margin-top: 40px;
+  padding: 40px 0 0;
+  background: linear-gradient(180deg, rgba(255, 251, 245, 0.58), rgba(245, 238, 226, 0.88));
+  border-top: 1px solid rgba(var(--ink-rgb), 0.08);
+  overflow: hidden;
+}
+
+.site-footer::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 50%;
+  width: 420px;
+  height: 420px;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(var(--brand-primary-rgb), 0.12), transparent 70%);
+  pointer-events: none;
+}
+
+.footer-bottom {
+  margin-top: 28px;
+  padding: 18px 0 28px;
+  border-top: 1px solid rgba(var(--ink-rgb), 0.08);
+  font-size: 0.9rem;
+}
+
+.footer-bottom .container {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-step {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+
+  .interactive-card,
+  .service-stage,
+  .service-detail-card,
+  .testimonial-card,
+  .proof-strip__item,
+  .work-spotlight,
+  .contact-card,
+  .contact-panel,
+  .contact-point,
+  .contact-option {
+    transform: none !important;
+  }
+
+  .btn::before,
+  .hero-rotator::after,
+  .hero-card::after,
+  .service-stage::after,
+  .work-spotlight::after,
+  .client-showcase::after,
+  .service-detail-card::after,
+  .testimonial-card::after,
+  .proof-strip__item::after,
+  .contact-card::after,
+  .contact-panel::after {
+    animation: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; }
+}
