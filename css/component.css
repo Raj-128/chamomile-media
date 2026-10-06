@@ -470,11 +470,12 @@
 
 .video-showcase__track {
   display: grid;
-  grid-auto-columns: clamp(240px, 27vw, 320px);
+  grid-auto-columns: clamp(190px, 18vw, 250px);
   grid-auto-flow: column;
   gap: 18px;
   overflow-x: auto;
   padding: 4px 4px 18px;
+  scroll-padding-inline: 4px;
   scroll-snap-type: x mandatory;
   overscroll-behavior-inline: contain;
   scrollbar-color: rgba(var(--brand-primary-rgb), 0.58) rgba(var(--brand-primary-rgb), 0.1);
@@ -500,7 +501,7 @@
   position: relative;
   display: grid;
   place-items: center;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 9 / 16;
   overflow: hidden;
   background:
     radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.84), transparent 38%),
@@ -1715,7 +1716,7 @@
   }
 
   .video-showcase__track {
-    grid-auto-columns: 82vw;
+    grid-auto-columns: clamp(190px, 68vw, 260px);
     gap: 14px;
   }
 

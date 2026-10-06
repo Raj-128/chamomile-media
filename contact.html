@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Contact - Chamomile Media</title>
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/images/chamomile-favicon.png">
+  <link rel="apple-touch-icon" href="assets/images/chamomile-favicon.png">
+  <script>
+    document.documentElement.classList.add("reveal-pending");
+  </script>
   
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -267,7 +272,7 @@
 
 <main class="contact-shell">
   <div class="container contact-layout">
-    <aside class="contact-panel">
+    <aside class="contact-panel reveal">
       <span class="contact-panel__eyebrow">Start a Project</span>
       <h2>Let's shape a calmer, stronger digital presence.</h2>
       <p>
@@ -305,7 +310,7 @@
       </div>
     </aside>
 
-    <section class="contact-card" id="contact-card">
+    <section class="contact-card reveal" id="contact-card">
       <div class="contact-brand">
         <img
           src="assets/images/chamomile-logo.jpg"
@@ -470,6 +475,13 @@
 </footer>
 
 <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
+<script src="https://unpkg.com/gsap@3/dist/ScrollTrigger.min.js"></script>
+<script>
+  if (!window.gsap || !window.ScrollTrigger) {
+    document.documentElement.classList.remove("reveal-pending");
+  }
+</script>
+<script src="js/animations.js"></script>
 <script src="js/contact.js"></script>
 
 </body>
