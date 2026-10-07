@@ -15,15 +15,36 @@
     "assets/images/clients/mr-maharaj-surat.jpg",
   ];
 
-  tunnel.querySelectorAll(".gallery-tunnel__tile").forEach((tile, index) => {
-    tile.replaceChildren();
-    if (index % 3 !== 0) return;
+  const surfaces = Array.from(tunnel.querySelectorAll(".gallery-tunnel__surface"));
 
-    const image = document.createElement("img");
-    image.src = artwork[Math.floor(index / 3) % artwork.length];
-    image.alt = "";
-    image.decoding = "async";
-    tile.append(image);
+  surfaces.forEach((surface) => {
+    const tiles = Array.from(surface.querySelectorAll(".gallery-tunnel__tile"));
+
+    tiles.forEach((tile, index) => {
+      tile.replaceChildren();
+      tile.classList.remove("gallery-tunnel__tile--image", "gallery-tunnel__tile--empty");
+
+      const shouldShowImage = Math.random() < 0.32 && index % 2 === 0;
+      if (!shouldShowImage) {
+        tile.classList.add("gallery-tunnel__tile--empty");
+        tile.style.setProperty("--tile-width", "0%");
+        tile.style.setProperty("--tile-height", "0%");
+        return;
+      }
+
+      const image = document.createElement("img");
+      image.src = artwork[(index + Math.floor(Math.random() * artwork.length)) % artwork.length];
+      image.alt = "";
+      image.decoding = "async";
+      image.loading = "eager";
+
+      const widthSet = ["52%", "64%", "72%", "82%", "90%"];
+      const heightSet = ["42%", "54%", "62%", "72%", "82%"];
+      tile.style.setProperty("--tile-width", widthSet[Math.floor(Math.random() * widthSet.length)]);
+      tile.style.setProperty("--tile-height", heightSet[Math.floor(Math.random() * heightSet.length)]);
+      tile.classList.add("gallery-tunnel__tile--image");
+      tile.append(image);
+    });
   });
 
   tunnel.classList.add("is-visible");
