@@ -64,6 +64,23 @@ body.menu-open {
   overflow: hidden;
 }
 
+.skip-link {
+  position: fixed;
+  z-index: 1100;
+  top: 12px;
+  left: 12px;
+  padding: 12px 18px;
+  border-radius: 999px;
+  background: var(--text-main);
+  color: #fff;
+  font-weight: 700;
+  transform: translateY(calc(-100% - 16px));
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 main section[id] {
   scroll-margin-top: 130px;
 }

@@ -80,6 +80,9 @@ const path = require("path");
         gallerySlots: document.querySelectorAll(".gallery-tunnel__tile").length,
         videoCategories: [...document.querySelectorAll(".video-format-card h3")]
           .map((title) => title.textContent.trim()),
+        missingFragmentTargets: [...document.querySelectorAll('a[href^="#"]')]
+          .map((link) => link.getAttribute("href").slice(1))
+          .filter((id) => !document.getElementById(id)),
         videosFollowServices:
           document.querySelector("#services").compareDocumentPosition(
             document.querySelector("#best-videos")
@@ -115,6 +118,7 @@ const path = require("path");
       desktop.postHeroBackgrounds.every(({ backgroundImage }) => backgroundImage !== "none"),
       "every section after the hero should have a background treatment"
     );
+    assert.deepStrictEqual(desktop.missingFragmentTargets, [], "all in-page links should have a target");
     assert.strictEqual(desktop.gallerySlots, 30, "gallery tunnel should provide 30 image slots");
     assert.deepStrictEqual(desktop.videoCategories, [
       "UGC Videos",
@@ -138,10 +142,12 @@ const path = require("path");
     assert(desktop.headlineLeft < desktop.formLeft, "hero headline should stay left of the form");
     assert(desktop.heroHeight >= desktop.viewportHeight, "hero should fill the viewport");
 
-    const initialTileTransform = await page.locator(".gallery-tunnel__tile").first()
+    const animatedTile = page.locator(".gallery-tunnel__tile--image").first();
+    await animatedTile.waitFor();
+    const initialTileTransform = await animatedTile
       .evaluate((tile) => getComputedStyle(tile).transform);
     await page.waitForTimeout(900);
-    const advancedTileTransform = await page.locator(".gallery-tunnel__tile").first()
+    const advancedTileTransform = await animatedTile
       .evaluate((tile) => getComputedStyle(tile).transform);
     assert.notStrictEqual(
       advancedTileTransform,
@@ -157,22 +163,149 @@ const path = require("path");
       videoTrackScrollable:
         document.querySelector(".video-showcase__track").scrollWidth >
         document.querySelector(".video-showcase__track").clientWidth,
+      horizontalOverflow: document.documentElement.scrollWidth > innerWidth,
     }));
 
     assert.strictEqual(mobile.columns, 2, "mobile should show two logo columns");
     assert(mobile.formFits, "inquiry form should fit on mobile");
     assert(mobile.videoTrackScrollable, "video showcase should scroll on mobile");
-    await page.locator(".work-card").nth(2).click();
+    assert.strictEqual(mobile.horizontalOverflow, false, "mobile homepage should not overflow horizontally");
+    const selectedWorkCard = page.locator(".work-card").nth(2);
+    await selectedWorkCard.evaluate((card) => {
+      card.scrollIntoView({ block: "center", behavior: "instant" });
+    });
+    await page.waitForFunction(() => {
+      const card = document.querySelectorAll(".work-card")[2];
+      return card && getComputedStyle(card).visibility === "visible";
+    });
+    await selectedWorkCard.click();
     const workHighlight = await page.locator(".work-spotlight").evaluate((spotlight) => ({
       client: spotlight.querySelector(".work-spotlight__title").textContent.trim(),
       category: spotlight.querySelector(".work-spotlight__category").textContent.trim(),
+      selected: spotlight.ownerDocument.querySelectorAll(".work-card")[2].getAttribute("aria-pressed"),
     }));
     assert.deepStrictEqual(workHighlight, {
       client: "Shivanta Group",
       category: "Trust-led",
+      selected: "true",
     }, "selecting a work card should update the matching highlight");
+
+    await page.goto(`http://127.0.0.1:${address.port}/contact.html`, { waitUntil: "domcontentloaded" });
+    assert.strictEqual(
+      await page.locator("#contact-form").getAttribute("action"),
+      "thank-you.html",
+      "contact confirmation path should remain relative to the deployed site"
+    );
+    const firstServicePill = page.locator(".service-pill").first();
+    await firstServicePill.evaluate((pill) => {
+      pill.scrollIntoView({ block: "center", behavior: "instant" });
+    });
+    await page.waitForFunction(() => {
+      const pill = document.querySelector(".service-pill");
+      return pill && getComputedStyle(pill).visibility === "visible";
+    });
+    await firstServicePill.click();
+    assert.strictEqual(
+      await page.locator("#contact-services").inputValue(),
+      "Brand Strategy",
+      "selected services should be included in the inquiry form"
+    );
+    await page.locator("#contact-name").fill("Test visitor");
+    await page.locator("#contact-email").fill("visitor@example.com");
+    await page.locator("#contact-message").fill("Testing the local contact form.");
+    await page.locator("#contact-form button[type='submit']").click();
+    assert.match(
+      await page.locator("#contact-status").textContent(),
+      /Local preview only/,
+      "local form submission should explain that Netlify is required"
+    );
+    const contactHasHorizontalOverflow = await page.evaluate(
+      () => document.documentElement.scrollWidth > innerWidth
+    );
+    assert.strictEqual(contactHasHorizontalOverflow, false, "contact page should not overflow horizontally");
+    const menuToggle = page.locator(".menu-toggle");
+    await menuToggle.click();
+    assert.strictEqual(await menuToggle.getAttribute("aria-expanded"), "true");
+    await page.keyboard.press("Escape");
+    assert.strictEqual(await menuToggle.getAttribute("aria-expanded"), "false");
+
     assert.deepStrictEqual(pageErrors, [], "page should have no JavaScript errors");
-    console.log("PASSED: gallery, full-color unboxed logos, responsive layout, and video showcase");
+
+    const appsScriptEndpoint = "https://script.google.com/macros/s/test-deployment/exec";
+    const appsScriptPage = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    const appsScriptPageErrors = [];
+    let appsScriptSubmission = "";
+    appsScriptPage.on("pageerror", (error) => appsScriptPageErrors.push(error.message));
+    await appsScriptPage.route("**/index.html", async (route) => {
+      const response = await route.fetch();
+      const html = (await response.text()).replace(
+        'data-apps-script-url=""',
+        `data-apps-script-url="${appsScriptEndpoint}"`
+      );
+      await route.fulfill({ response, body: html });
+    });
+    await appsScriptPage.route("**/contact.html", async (route) => {
+      const response = await route.fetch();
+      const html = (await response.text()).replace(
+        'data-apps-script-url=""',
+        `data-apps-script-url="${appsScriptEndpoint}"`
+      );
+      await route.fulfill({ response, body: html });
+    });
+    await appsScriptPage.route(appsScriptEndpoint, async (route) => {
+      appsScriptSubmission = route.request().postData() || "";
+      const submittedFormId = new URLSearchParams(appsScriptSubmission).get("formId");
+      await route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body:
+          '<!doctype html><html><body><script>parent.postMessage(' +
+          JSON.stringify({
+            type: "chamomile-inquiry-result",
+            status: "success",
+            formId: submittedFormId,
+          }) +
+          ', "*");</script></body></html>',
+      });
+    });
+    await appsScriptPage.goto(`http://127.0.0.1:${address.port}/index.html`, {
+      waitUntil: "domcontentloaded",
+    });
+    await appsScriptPage.locator("#hero-inquiry-name").fill("Apps Script test");
+    await appsScriptPage.locator("#hero-inquiry-email").fill("apps-script@example.com");
+    await appsScriptPage.locator("#hero-inquiry-phone").fill("+1 555 0100");
+    await appsScriptPage.locator("#hero-inquiry-form button[type='submit']").click();
+    await appsScriptPage.waitForURL("**/thank-you.html");
+    const submittedFields = new URLSearchParams(appsScriptSubmission);
+    assert.strictEqual(submittedFields.get("formId"), "hero-inquiry-form");
+    assert.strictEqual(submittedFields.get("name"), "Apps Script test");
+    assert.strictEqual(submittedFields.get("email"), "apps-script@example.com");
+
+    await appsScriptPage.goto(`http://127.0.0.1:${address.port}/contact.html`, {
+      waitUntil: "domcontentloaded",
+    });
+    const appsScriptServicePill = appsScriptPage.locator(".service-pill").first();
+    await appsScriptServicePill.evaluate((pill) => {
+      pill.scrollIntoView({ block: "center", behavior: "instant" });
+    });
+    await appsScriptPage.waitForFunction(
+      () => getComputedStyle(document.querySelector(".service-pill")).visibility === "visible"
+    );
+    await appsScriptServicePill.click();
+    await appsScriptPage.locator("#contact-name").fill("Contact form test");
+    await appsScriptPage.locator("#contact-email").fill("contact-test@example.com");
+    await appsScriptPage.locator("#contact-company").fill("Test Company");
+    await appsScriptPage.locator("#contact-message").fill("Testing contact form routing.");
+    await appsScriptPage.locator("#contact-form button[type='submit']").click();
+    await appsScriptPage.waitForURL("**/thank-you.html");
+    const contactSubmission = new URLSearchParams(appsScriptSubmission);
+    assert.strictEqual(contactSubmission.get("formId"), "contact-form");
+    assert.strictEqual(contactSubmission.get("name"), "Contact form test");
+    assert.strictEqual(contactSubmission.get("company"), "Test Company");
+    assert.strictEqual(contactSubmission.get("services"), "Brand Strategy");
+    assert.deepStrictEqual(appsScriptPageErrors, [], "Apps Script form mode should have no JavaScript errors");
+
+    console.log("PASSED: responsive site, both contact forms, Netlify fallback, and Apps Script routing");
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));

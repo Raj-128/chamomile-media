@@ -25,6 +25,7 @@
   </head>
 
   <body class="homepage">
+    <a class="skip-link" href="#main-content">Skip to main content</a>
     <header class="site-header">
       <div class="container header-inner">
         <div class="logo">
@@ -40,18 +41,18 @@
             </span>
           </a>
         </div>
-        <nav class="primary-nav">
+        <nav class="primary-nav" id="primary-navigation" aria-label="Primary navigation">
           <a href="#home">Home</a>
           <a href="#about">About</a>
           <a href="#services">Services</a>
           <a href="#work">Work</a>
           <a href="contact.html" class="btn btn-primary">Contact</a>
         </nav>
-        <button type="button" class="menu-toggle" aria-label="Toggle navigation">&#9776;</button>
+        <button type="button" class="menu-toggle" aria-label="Open navigation menu" aria-controls="primary-navigation" aria-expanded="false">&#9776;</button>
       </div>
     </header>
 
-    <main>
+    <main id="main-content" tabindex="-1">
       <section class="hero" id="home">
         <div class="gallery-tunnel" aria-hidden="true">
           <div class="gallery-tunnel__surface gallery-tunnel__surface--left">
@@ -120,11 +121,12 @@
               id="hero-inquiry-form"
               name="hero-inquiry"
               method="POST"
-              action="/thank-you.html"
+              action="thank-you.html"
               netlify
               data-netlify="true"
               netlify-honeypot="bot-field"
               data-form-id="hero-inquiry-form"
+              data-apps-script-url=""
             >
               <input type="hidden" name="formId" value="hero-inquiry-form" />
               <input type="hidden" name="form-name" value="hero-inquiry" />
@@ -291,6 +293,7 @@
                   type="button"
                   class="service-nav-item is-active"
                   data-service-item
+                  aria-pressed="true"
                   data-service-kicker="Always-on visibility"
                   data-service-title="Social Media Management"
                   data-service-copy="Planning, posting, and platform consistency that keeps your brand active, visible, and professionally maintained."
@@ -449,7 +452,7 @@
             <div class="video-showcase__heading">
               <div>
                 <span class="eyebrow">Video that moves brands forward</span>
-                <h2 class="section-title">Best Performing Videos</h2>
+                <h2 class="section-title">Video Formats We Create</h2>
                 <p>
                   Different formats, one clear goal: make people stop, connect,
                   and take the next step.
@@ -465,8 +468,7 @@
             >
               <article class="video-format-card">
                 <div class="video-format-card__media video-format-card__media--ugc">
-                  <span class="video-format-card__play" aria-hidden="true">&#9654;</span>
-                  <span class="video-format-card__placeholder">Add UGC video</span>
+                  <span class="video-format-card__badge">Format preview</span>
                 </div>
                 <div class="video-format-card__copy">
                   <span>01 / Creator-led</span>
@@ -476,8 +478,7 @@
               </article>
               <article class="video-format-card">
                 <div class="video-format-card__media video-format-card__media--ai">
-                  <span class="video-format-card__play" aria-hidden="true">&#9654;</span>
-                  <span class="video-format-card__placeholder">Add AI video</span>
+                  <span class="video-format-card__badge">Format preview</span>
                 </div>
                 <div class="video-format-card__copy">
                   <span>02 / New ideas</span>
@@ -487,8 +488,7 @@
               </article>
               <article class="video-format-card">
                 <div class="video-format-card__media video-format-card__media--personal">
-                  <span class="video-format-card__play" aria-hidden="true">&#9654;</span>
-                  <span class="video-format-card__placeholder">Add founder video</span>
+                  <span class="video-format-card__badge">Format preview</span>
                 </div>
                 <div class="video-format-card__copy">
                   <span>03 / Build authority</span>
@@ -498,8 +498,7 @@
               </article>
               <article class="video-format-card">
                 <div class="video-format-card__media video-format-card__media--sales">
-                  <span class="video-format-card__play" aria-hidden="true">&#9654;</span>
-                  <span class="video-format-card__placeholder">Add sales video</span>
+                  <span class="video-format-card__badge">Format preview</span>
                 </div>
                 <div class="video-format-card__copy">
                   <span>04 / Drive action</span>
@@ -509,8 +508,7 @@
               </article>
               <article class="video-format-card">
                 <div class="video-format-card__media video-format-card__media--influencer">
-                  <span class="video-format-card__play" aria-hidden="true">&#9654;</span>
-                  <span class="video-format-card__placeholder">Add creator video</span>
+                  <span class="video-format-card__badge">Format preview</span>
                 </div>
                 <div class="video-format-card__copy">
                   <span>05 / Grow reach</span>
@@ -520,8 +518,7 @@
               </article>
               <article class="video-format-card">
                 <div class="video-format-card__media video-format-card__media--podcast">
-                  <span class="video-format-card__play" aria-hidden="true">&#9654;</span>
-                  <span class="video-format-card__placeholder">Add podcast clip</span>
+                  <span class="video-format-card__badge">Format preview</span>
                 </div>
                 <div class="video-format-card__copy">
                   <span>06 / Share a conversation</span>
@@ -548,6 +545,7 @@
                   data-panel-stat="Goals, audience, offer, and content audit"
                   data-panel-note="We align on the real gaps before we start producing anything."
                   role="button"
+                  aria-pressed="true"
                   tabindex="0"
                 >
                   <div class="step-marker">01</div>
@@ -564,6 +562,7 @@
                   data-panel-stat="Content plan, channel priorities, and campaign direction"
                   data-panel-note="The roadmap stays grounded in what your brand can actually execute well."
                   role="button"
+                  aria-pressed="false"
                   tabindex="0"
                 >
                   <div class="step-marker">02</div>
@@ -580,6 +579,7 @@
                   data-panel-stat="Design, reels, edits, web, and campaign assets"
                   data-panel-note="Everything is made to feel consistent, usable, and ready to deploy."
                   role="button"
+                  aria-pressed="false"
                   tabindex="0"
                 >
                   <div class="step-marker">03</div>
@@ -596,6 +596,7 @@
                   data-panel-stat="Publishing, support, optimizations, and iteration"
                   data-panel-note="The goal is calmer systems and stronger output over time."
                   role="button"
+                  aria-pressed="false"
                   tabindex="0"
                 >
                   <div class="step-marker">04</div>
@@ -642,6 +643,7 @@
               data-metric-label="Performance marketing"
               data-services="Campaign strategy, Audience targeting, Paid media"
               role="button"
+              aria-pressed="true"
               tabindex="0"
             >
               <span class="work-tag">Performance marketing</span>
@@ -661,6 +663,7 @@
               data-metric-label="Brand presence"
               data-services="Brand identity, Content, Social media"
               role="button"
+              aria-pressed="false"
               tabindex="0"
             >
               <span class="work-tag">Brand presence</span>
@@ -680,6 +683,7 @@
               data-metric-label="Trust-led brand communication"
               data-services="Brand communication, Content, Social media"
               role="button"
+              aria-pressed="false"
               tabindex="0"
             >
               <span class="work-tag">Trust-led</span>
@@ -1132,6 +1136,7 @@
     </script>
     <script src="js/animations.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/inquiry-forms.js"></script>
     <script src="js/gallery-tunnel.js"></script>
 
     <div class="process-blur-overlay"></div>

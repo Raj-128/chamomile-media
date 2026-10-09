@@ -247,6 +247,7 @@
   </style>
 </head>
 <body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
 
 <header class="site-header">
   <div class="container header-inner">
@@ -263,14 +264,14 @@
         </span>
       </a>
     </div>
-    <nav class="primary-nav">
+    <nav class="primary-nav" id="primary-navigation" aria-label="Primary navigation">
       <a href="index.html">Back to Home</a>
     </nav>
-    <button type="button" class="menu-toggle" aria-label="Toggle navigation">&#9776;</button>
+    <button type="button" class="menu-toggle" aria-label="Open navigation menu" aria-controls="primary-navigation" aria-expanded="false">&#9776;</button>
   </div>
 </header>
 
-<main class="contact-shell">
+<main class="contact-shell" id="main-content" tabindex="-1">
   <div class="container contact-layout">
     <aside class="contact-panel reveal">
       <span class="contact-panel__eyebrow">Start a Project</span>
@@ -329,11 +330,12 @@
         id="contact-form"
         name="contact-inquiry"
         method="POST"
-        action="/thank-you.html"
+        action="thank-you.html"
         netlify
         data-netlify="true"
         netlify-honeypot="bot-field"
         data-form-id="contact-form"
+        data-apps-script-url=""
       >
         <input type="hidden" name="formId" value="contact-form">
         <input type="hidden" name="form-name" value="contact-inquiry">
@@ -347,11 +349,11 @@
         <div class="field-grid">
           <div class="field-group">
             <label class="contact-label" for="contact-name">Name</label>
-            <input id="contact-name" name="name" type="text" placeholder="Your name" required>
+            <input id="contact-name" name="name" type="text" autocomplete="name" placeholder="Your name" required>
           </div>
           <div class="field-group">
             <label class="contact-label" for="contact-email">Email</label>
-            <input id="contact-email" name="email" type="email" placeholder="name@company.com" required>
+            <input id="contact-email" name="email" type="email" autocomplete="email" placeholder="name@company.com" required>
           </div>
           <div class="field-group field-group--full">
             <label class="contact-label" for="contact-phone">Phone number</label>
@@ -366,7 +368,7 @@
           </div>
           <div class="field-group">
             <label class="contact-label" for="contact-company">Brand or company</label>
-            <input id="contact-company" name="company" type="text" placeholder="Your brand name">
+            <input id="contact-company" name="company" type="text" autocomplete="organization" placeholder="Your brand name">
           </div>
           <div class="field-group">
             <label class="contact-label" for="contact-timeline">Ideal timeline</label>
@@ -379,8 +381,8 @@
             </select>
           </div>
           <div class="field-group field-group--full">
-            <label class="contact-label">Services you need</label>
-            <div class="service-pill-group" id="service-pill-group">
+            <span class="contact-label" id="contact-services-label">Services you need</span>
+            <div class="service-pill-group" id="service-pill-group" role="group" aria-labelledby="contact-services-label">
               <button class="service-pill" type="button" data-service="Brand Strategy">Brand Strategy</button>
               <button class="service-pill" type="button" data-service="Social Media">Social Media</button>
               <button class="service-pill" type="button" data-service="Content Creation">Content Creation</button>
@@ -483,6 +485,7 @@
 </script>
 <script src="js/animations.js"></script>
 <script src="js/contact.js"></script>
+<script src="js/inquiry-forms.js"></script>
 
 </body>
 </html>

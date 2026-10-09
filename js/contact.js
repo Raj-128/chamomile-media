@@ -6,7 +6,9 @@ const servicesInput = document.querySelector("#contact-services");
 const contactForm = document.querySelector("#contact-form");
 const contactStatus = document.querySelector("#contact-status");
 const contactSubmitButton = contactForm?.querySelector("button[type='submit']");
-const supportsPointerTilt = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const supportsPointerTilt =
+  window.matchMedia("(hover: hover) and (pointer: fine)").matches && !prefersReducedMotion;
 
 if (toggle && nav) {
   toggle.setAttribute("aria-expanded", "false");
@@ -15,12 +17,14 @@ if (toggle && nav) {
     nav.classList.remove("open");
     document.body.classList.remove("menu-open");
     toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-label", "Open navigation menu");
   };
 
   toggle.addEventListener("click", () => {
     const isOpen = nav.classList.toggle("open");
     document.body.classList.toggle("menu-open", isOpen);
     toggle.setAttribute("aria-expanded", String(isOpen));
+    toggle.setAttribute("aria-label", isOpen ? "Close navigation menu" : "Open navigation menu");
   });
 
   nav.querySelectorAll("a").forEach((link) => link.addEventListener("click", closeNavigation));
@@ -73,9 +77,10 @@ if (servicePills.length && servicesInput) {
 
 if (contactForm && contactSubmitButton && contactStatus) {
   const isLocalPreview = ["127.0.0.1", "localhost", ""].includes(window.location.hostname);
+  const usesAppsScript = Boolean(contactForm.dataset.appsScriptUrl?.trim());
 
   contactForm.addEventListener("submit", (event) => {
-    if (isLocalPreview) {
+    if (isLocalPreview && !usesAppsScript) {
       event.preventDefault();
       contactStatus.textContent =
         "Local preview only: publish this site on Netlify to receive inquiry submissions.";
@@ -86,7 +91,7 @@ if (contactForm && contactSubmitButton && contactStatus) {
     contactSubmitButton.disabled = true;
     contactSubmitButton.textContent = "Sending...";
     contactStatus.textContent = "Sending your inquiry to Chamomile Media...";
-    contactStatus.dataset.state = "success";
+    contactStatus.dataset.state = "pending";
   });
 }
 
