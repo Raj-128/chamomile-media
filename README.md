@@ -59,6 +59,11 @@ forms use Netlify Forms.
 Subsequent pushes to `main` will trigger Netlify deployments when the
 repository is connected.
 
+The inquiry forms use Netlify by default. To save leads to a private Google
+Sheet and send the owner an email notification through Apps Script, follow
+[`backend/README.md`](./backend/README.md). The Apps Script endpoint must be
+configured on both forms before that integration becomes active.
+
 ## Optional GitHub Pages mirror
 
 The same repository can also be published on GitHub Pages as a static preview:

@@ -24,14 +24,17 @@ const serviceStage = {
 const clientSlider = document.querySelector("[data-client-slider]");
 const clientTrack = document.querySelector("[data-client-track]");
 const isMobileViewport = () => window.matchMedia("(max-width: 900px)").matches;
-const supportsPointerTilt = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const supportsPointerTilt =
+  window.matchMedia("(hover: hover) and (pointer: fine)").matches && !prefersReducedMotion;
 
 if (heroInquiryForm) {
   const heroInquiryStatus = heroInquiryForm.querySelector(".hero-inquiry-status");
   const submitButton = heroInquiryForm.querySelector('button[type="submit"]');
+  const usesAppsScript = Boolean(heroInquiryForm.dataset.appsScriptUrl?.trim());
 
   heroInquiryForm.addEventListener("submit", (event) => {
-    if (["127.0.0.1", "localhost", ""].includes(window.location.hostname)) {
+    if (!usesAppsScript && ["127.0.0.1", "localhost", ""].includes(window.location.hostname)) {
       event.preventDefault();
       if (heroInquiryStatus) {
         heroInquiryStatus.textContent =
@@ -47,26 +50,28 @@ if (heroInquiryForm) {
     }
     if (heroInquiryStatus) {
       heroInquiryStatus.textContent = "Sending your inquiry to Chamomile Media...";
-      heroInquiryStatus.dataset.state = "success";
+      heroInquiryStatus.dataset.state = "pending";
     }
   });
 }
 
 if (toggle && nav) {
-  toggle.setAttribute("aria-expanded", "false");
+  const closeNavigation = () => {
+    nav.classList.remove("open");
+    document.body.classList.remove("menu-open");
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-label", "Open navigation menu");
+  };
 
   toggle.addEventListener("click", () => {
     const isOpen = nav.classList.toggle("open");
     document.body.classList.toggle("menu-open", isOpen);
     toggle.setAttribute("aria-expanded", String(isOpen));
+    toggle.setAttribute("aria-label", isOpen ? "Close navigation menu" : "Open navigation menu");
   });
 
   nav.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", () => {
-      nav.classList.remove("open");
-      document.body.classList.remove("menu-open");
-      toggle.setAttribute("aria-expanded", "false");
-    });
+    link.addEventListener("click", closeNavigation);
   });
 
   document.addEventListener("click", (event) => {
@@ -78,25 +83,19 @@ if (toggle && nav) {
     const clickedToggle = toggle.contains(event.target);
 
     if (!clickedInsideNav && !clickedToggle) {
-      nav.classList.remove("open");
-      document.body.classList.remove("menu-open");
-      toggle.setAttribute("aria-expanded", "false");
+      closeNavigation();
     }
   });
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
-      nav.classList.remove("open");
-      document.body.classList.remove("menu-open");
-      toggle.setAttribute("aria-expanded", "false");
+      closeNavigation();
     }
   });
 
   window.addEventListener("resize", () => {
     if (window.innerWidth > 768) {
-      nav.classList.remove("open");
-      document.body.classList.remove("menu-open");
-      toggle.setAttribute("aria-expanded", "false");
+      closeNavigation();
     }
   });
 }
@@ -173,7 +172,7 @@ if (rotatingValue) {
   const phrases = JSON.parse(rotatingValue.dataset.rotate || "[]");
   let currentIndex = 0;
 
-  if (phrases.length > 1) {
+  if (phrases.length > 1 && !prefersReducedMotion) {
     const swapDuration = 460;
 
     setInterval(() => {
@@ -316,6 +315,9 @@ if (servicesShowcase && serviceNavItems.length && serviceStage.panel) {
 
   const queueNextService = () => {
     stopServiceCycle();
+    if (prefersReducedMotion) {
+      return;
+    }
     restartServiceProgress();
     serviceCycleId = window.setTimeout(() => {
       activateService((activeServiceIndex + 1) % totalServices);
@@ -330,6 +332,7 @@ if (servicesShowcase && serviceNavItems.length && serviceStage.panel) {
 
     serviceNavItems.forEach((navItem, navIndex) => {
       navItem.classList.toggle("is-active", navIndex === index);
+      navItem.setAttribute("aria-pressed", String(navIndex === index));
     });
 
     serviceStage.kicker.textContent = item.dataset.serviceKicker || "";
@@ -338,7 +341,7 @@ if (servicesShowcase && serviceNavItems.length && serviceStage.panel) {
     serviceStage.chips.innerHTML = serviceTags.map((tag) => `<span>${tag}</span>`).join("");
     serviceStage.count.textContent = `${String(index + 1).padStart(2, "0")} / ${String(totalServices).padStart(2, "0")}`;
 
-    if (serviceStage.panel.animate) {
+    if (!prefersReducedMotion && serviceStage.panel.animate) {
       serviceStage.panel.animate(
         [
           { opacity: 0.62, transform: "translateY(12px)" },
@@ -405,6 +408,7 @@ const setActiveProcessStep = (step) => {
 
   processSteps.forEach((item) => item.classList.remove("is-active"));
   step.classList.add("is-active");
+  processSteps.forEach((item) => item.setAttribute("aria-pressed", String(item === step)));
 
   const title = step.querySelector("h3")?.textContent?.trim() || "";
 
@@ -424,7 +428,7 @@ if (processSteps.length && processPanel.title) {
 
       if (isMobileViewport()) {
         document.querySelector(".process-visual")?.scrollIntoView({
-          behavior: "smooth",
+          behavior: prefersReducedMotion ? "auto" : "smooth",
           block: "nearest",
         });
       }
@@ -458,6 +462,7 @@ const setActiveWorkCard = (card) => {
 
   workCards.forEach((item) => item.classList.remove("is-active"));
   card.classList.add("is-active");
+  workCards.forEach((item) => item.setAttribute("aria-pressed", String(item === card)));
 
   workSpotlight.title.textContent = card.dataset.client || "";
   workSpotlight.metric.textContent = card.dataset.metric || "";
@@ -484,7 +489,7 @@ if (workCards.length && workSpotlight.title) {
 
       if (isMobileViewport()) {
         document.querySelector(".work-spotlight")?.scrollIntoView({
-          behavior: "smooth",
+          behavior: prefersReducedMotion ? "auto" : "smooth",
           block: "nearest",
         });
       }

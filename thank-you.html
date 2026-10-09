@@ -73,6 +73,7 @@
   </style>
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <header class="site-header">
     <div class="container header-inner">
       <div class="logo">
@@ -88,21 +89,21 @@
           </span>
         </a>
       </div>
-      <nav class="primary-nav">
+      <nav class="primary-nav" id="primary-navigation" aria-label="Primary navigation">
         <a href="index.html">Back to Home</a>
       </nav>
-      <button type="button" class="menu-toggle" aria-label="Toggle navigation">&#9776;</button>
+      <button type="button" class="menu-toggle" aria-label="Open navigation menu" aria-controls="primary-navigation" aria-expanded="false">&#9776;</button>
     </div>
   </header>
 
-  <main class="thank-you-shell">
+  <main class="thank-you-shell" id="main-content" tabindex="-1">
     <div class="container">
       <section class="thank-you-card reveal">
         <span class="eyebrow">Inquiry Received</span>
         <h1>Thanks, your message is in.</h1>
         <p>
-          Your inquiry has been sent to Chamomile Media through the site form.
-          If Netlify form notifications are enabled, the team will also receive it in the connected inbox.
+          Your inquiry has been received. The Chamomile Media team will review
+          your details and get back to you as soon as possible.
         </p>
         <div class="thank-you-actions">
           <a href="index.html" class="btn btn-primary">Return Home</a>
