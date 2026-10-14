@@ -36,6 +36,7 @@
     .contact-card {
         background: rgba(255, 251, 245, 0.8);
         backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
         border: 1px solid rgba(var(--ink-rgb), 0.08);
         box-shadow: var(--shadow-soft);
         border-radius: 28px;
@@ -116,9 +117,67 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 16px;
     }
+    .contact-step[hidden] {
+        display: none;
+    }
+    .contact-step__title {
+        grid-column: 1 / -1;
+        margin: 0;
+        color: var(--text-main);
+        font-size: 1.1rem;
+    }
+    .contact-progress {
+        display: grid;
+        gap: 9px;
+    }
+    .contact-progress__label {
+        color: var(--text-muted);
+        font-size: 0.82rem;
+        font-weight: 700;
+    }
+    .contact-progress__track {
+        height: 6px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(var(--ink-rgb), 0.1);
+    }
+    .contact-progress__track > span {
+        display: block;
+        width: 50%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--green-main), var(--amber-soft));
+        transition: width 260ms ease;
+    }
+    .contact-step:not([hidden]) {
+        animation: contactStepIn 260ms ease both;
+    }
+    .contact-step__title:focus {
+        outline: none;
+    }
     .field-group {
         display: grid;
         gap: 8px;
+    }
+    .field-group.has-error {
+        animation: fieldErrorNudge 300ms ease;
+    }
+    .field-group.has-error input,
+    .field-group.has-error select,
+    .field-group.has-error textarea {
+        border-color: #b94d45;
+        box-shadow: 0 0 0 3px rgba(185, 77, 69, 0.1);
+    }
+    .service-pill-group[aria-invalid="true"] .service-pill {
+        border-color: #b94d45;
+    }
+    .field-error {
+        color: #a3483f;
+        font-size: 0.82rem;
+        line-height: 1.4;
+    }
+    .field-error[hidden] {
+        display: none;
     }
     .field-group--full {
         grid-column: 1 / -1;
@@ -168,6 +227,9 @@
     .contact-submit .btn {
         min-width: 210px;
     }
+    .contact-submit [data-step-prev] {
+        margin-right: auto;
+    }
     .contact-note {
         max-width: 360px;
         font-size: 0.92rem;
@@ -183,6 +245,26 @@
     }
     .contact-status[data-state="success"] {
         color: var(--green-main);
+    }
+    @keyframes contactStepIn {
+        from { opacity: 0.55; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fieldErrorNudge {
+        0%, 100% { transform: translateX(0); }
+        35% { transform: translateX(-4px); }
+        70% { transform: translateX(4px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .contact-step:not([hidden]) {
+            animation: none;
+        }
+        .contact-progress__track > span {
+            transition: none;
+        }
+        .field-group.has-error {
+            animation: none;
+        }
     }
     @media (max-width: 900px) {
         .contact-layout {
@@ -336,6 +418,7 @@
         netlify-honeypot="bot-field"
         data-form-id="contact-form"
         data-apps-script-url=""
+        novalidate
       >
         <input type="hidden" name="formId" value="contact-form">
         <input type="hidden" name="form-name" value="contact-inquiry">
@@ -346,14 +429,32 @@
             <input name="bot-field">
           </label>
         </p>
-        <div class="field-grid">
+        <div class="contact-progress">
+          <span class="contact-progress__label">Step <span data-step-count>1</span> of 2</span>
+          <div
+            class="contact-progress__track"
+            role="progressbar"
+            aria-label="Project inquiry progress"
+            aria-valuemin="1"
+            aria-valuemax="2"
+            aria-valuenow="1"
+            data-step-progress
+          >
+            <span></span>
+          </div>
+        </div>
+
+        <div class="field-grid contact-step" data-contact-step="0" aria-labelledby="contact-step-one-title">
+          <h2 class="contact-step__title" id="contact-step-one-title" tabindex="-1">01 / About you</h2>
           <div class="field-group">
             <label class="contact-label" for="contact-name">Name</label>
-            <input id="contact-name" name="name" type="text" autocomplete="name" placeholder="Your name" required>
+            <input id="contact-name" name="name" type="text" autocomplete="name" placeholder="Your name" aria-describedby="contact-name-error" required>
+            <span class="field-error" id="contact-name-error" hidden></span>
           </div>
           <div class="field-group">
             <label class="contact-label" for="contact-email">Email</label>
-            <input id="contact-email" name="email" type="email" autocomplete="email" placeholder="name@company.com" required>
+            <input id="contact-email" name="email" type="email" autocomplete="email" placeholder="name@company.com" aria-describedby="contact-email-error" required>
+            <span class="field-error" id="contact-email-error" hidden></span>
           </div>
           <div class="field-group field-group--full">
             <label class="contact-label" for="contact-phone">Phone number</label>
@@ -366,30 +467,40 @@
               placeholder="+91 98765 43210"
             >
           </div>
-          <div class="field-group">
+          <div class="field-group field-group--full">
             <label class="contact-label" for="contact-company">Brand or company</label>
             <input id="contact-company" name="company" type="text" autocomplete="organization" placeholder="Your brand name">
           </div>
-          <div class="field-group">
+        </div>
+
+        <div class="field-grid contact-step" data-contact-step="1" aria-labelledby="contact-step-two-title" hidden>
+          <h2 class="contact-step__title" id="contact-step-two-title" tabindex="-1">02 / Your project</h2>
+          <div class="field-group field-group--full">
             <label class="contact-label" for="contact-timeline">Ideal timeline</label>
-            <select id="contact-timeline" name="timeline">
+            <select id="contact-timeline" name="timeline" aria-describedby="contact-timeline-error" required>
               <option value="">Choose a timeline</option>
               <option>ASAP</option>
               <option>Within 2-4 weeks</option>
               <option>Within 1-2 months</option>
               <option>Just exploring</option>
             </select>
+            <span class="field-error" id="contact-timeline-error" hidden></span>
           </div>
           <div class="field-group field-group--full">
             <span class="contact-label" id="contact-services-label">Services you need</span>
-            <div class="service-pill-group" id="service-pill-group" role="group" aria-labelledby="contact-services-label">
-              <button class="service-pill" type="button" data-service="Brand Strategy">Brand Strategy</button>
-              <button class="service-pill" type="button" data-service="Social Media">Social Media</button>
-              <button class="service-pill" type="button" data-service="Content Creation">Content Creation</button>
-              <button class="service-pill" type="button" data-service="Website Design">Website Design</button>
+            <div class="service-pill-group" id="service-pill-group" role="group" aria-labelledby="contact-services-label" aria-describedby="contact-services-error">
+              <button class="service-pill" type="button" data-service="Social Media Management">Social Media Management</button>
+              <button class="service-pill" type="button" data-service="Content Strategy">Content Strategy</button>
+              <button class="service-pill" type="button" data-service="Videography and Edits">Videography and Edits</button>
+              <button class="service-pill" type="button" data-service="Graphic Design">Graphic Design</button>
+              <button class="service-pill" type="button" data-service="Personal Branding">Personal Branding</button>
+              <button class="service-pill" type="button" data-service="Campaign Design">Campaign Design</button>
+              <button class="service-pill" type="button" data-service="Web Design">Web Design</button>
+              <button class="service-pill" type="button" data-service="Offline Event Support">Offline Event Support</button>
               <button class="service-pill" type="button" data-service="Performance Marketing">Performance Marketing</button>
-              <button class="service-pill" type="button" data-service="SEO">SEO</button>
+              <button class="service-pill" type="button" data-service="Podcast Support">Podcast Support</button>
             </div>
+            <span class="field-error" id="contact-services-error" hidden></span>
             <input id="contact-services" name="services" type="hidden">
           </div>
           <div class="field-group">
@@ -421,11 +532,13 @@
               placeholder="Tell us about your brand, what feels messy right now, and what result you want next."
               required
             ></textarea>
+            <span class="field-error" id="contact-message-error" hidden></span>
           </div>
         </div>
-
         <div class="contact-submit">
-          <button class="btn btn-primary" type="submit">Send Inquiry</button>
+          <button class="btn btn-ghost" type="button" data-step-prev hidden>Back</button>
+          <button class="btn btn-primary" type="button" data-step-next>Continue to project</button>
+          <button class="btn btn-primary" type="submit" data-step-submit hidden>Send Inquiry</button>
         </div>
         <p class="contact-status" id="contact-status" aria-live="polite"></p>
       </form>

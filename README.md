@@ -2,7 +2,8 @@
 
 Chamomile Media is a responsive digital marketing agency website built with
 plain HTML, CSS, and JavaScript. It presents the agency's services, selected
-work, client brands, video formats, and contact options.
+work, client brands, video formats, and contact options. The portfolio and
+client list are static content; there is no custom admin dashboard or CMS.
 
 ## Website pages
 
@@ -63,6 +64,10 @@ The inquiry forms use Netlify by default. To save leads to a private Google
 Sheet and send the owner an email notification through Apps Script, follow
 [`backend/README.md`](./backend/README.md). The Apps Script endpoint must be
 configured on both forms before that integration becomes active.
+
+The detailed contact form is a two-step client-side wizard. It requires a name,
+valid email, timeline, at least one listed service, and a short project brief.
+The service choices match the offerings shown on the homepage.
 
 ## Optional GitHub Pages mirror
 

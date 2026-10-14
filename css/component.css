@@ -1272,7 +1272,6 @@
   display: flex;
   gap: 20px;
   width: max-content;
-  will-change: transform;
   transform: translateX(0);
 }
 
@@ -2140,9 +2139,8 @@
 /* ==========================================================================
    Client carousel
    --------------------------------------------------------------------------
-   The track flows at a constant speed set in JS. Hover only changes the card
-   under the cursor, never the pace of the flow, so the row never appears to
-   speed up or stall when the cursor crosses it.
+   The track's loop and hover pacing are controlled in JS. Its transform is
+   updated on animation frames, so CSS transitions must not compete with it.
    ========================================================================== */
 
 .client-slider__viewport {
@@ -2181,6 +2179,15 @@
   .client-logo-card:hover .client-logo-card__name,
   .client-logo-card:focus-within .client-logo-card__name {
     color: var(--brand-primary, var(--text-main));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-tunnel__tile--image,
+  .service-stage,
+  .process-step:hover,
+  .process-step:focus-visible {
+    will-change: auto;
   }
 }
 
@@ -2330,18 +2337,12 @@
   margin-top: 30px;
 }
 
-.client-logo-grid {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 18px;
-}
-
 .client-logo-card {
-  width: auto;
+  width: 190px;
   min-width: 0;
   min-height: 126px;
   padding: 10px 8px;
-  flex: initial;
+  flex: 0 0 auto;
   align-content: center;
   gap: 8px;
   border: 0;
@@ -2391,26 +2392,27 @@
   text-align: center;
 }
 
-@media (max-width: 1050px) {
-  .client-logo-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
 @media (max-width: 640px) {
-  .client-logo-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-  }
-
   .client-logo-card {
     min-height: 114px;
     padding: 8px 4px;
   }
 }
 
-@media (max-width: 420px) {
-  .client-logo-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+.client-slider__viewport {
+  touch-action: pan-y;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.client-slider__viewport.is-dragging {
+  cursor: grabbing;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .process-step:hover,
+  .process-step:focus-visible {
+    will-change: transform;
   }
 }

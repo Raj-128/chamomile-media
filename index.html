@@ -726,12 +726,22 @@
         <div class="container">
           <div class="client-showcase reveal">
             <span class="client-showcase__eyebrow">Brands and Teams We&apos;ve Supported</span>
-            <h2 class="client-showcase__title">Brands and teams we&apos;ve supported.</h2>
+            <h2 class="client-showcase__title" id="client-showcase-title">Brands and teams we&apos;ve supported.</h2>
             <p class="client-showcase__copy">
               The brands, teams, and communities Chamomile Media has supported.
             </p>
             <div class="client-logo-wall">
-              <div class="client-logo-grid">
+              <div class="client-slider" data-client-slider role="region" aria-labelledby="client-showcase-title">
+                <button
+                  class="client-slider__arrow client-slider__arrow--prev"
+                  type="button"
+                  data-client-prev
+                  aria-label="Show previous brands"
+                >
+                  <span aria-hidden="true">&#8249;</span>
+                </button>
+                <div class="client-slider__viewport" tabindex="0" aria-label="Client brands carousel">
+                  <div class="client-slider__track" data-client-track>
                   <article class="client-logo-card">
                     <div class="client-logo-card__art">
                       <img
@@ -956,6 +966,16 @@
                     <div class="client-logo-card__art"><span>SI</span></div>
                     <strong class="client-logo-card__name">Sunroof Industries</strong>
                   </article>
+                  </div>
+                </div>
+                <button
+                  class="client-slider__arrow client-slider__arrow--next"
+                  type="button"
+                  data-client-next
+                  aria-label="Show next brands"
+                >
+                  <span aria-hidden="true">&#8250;</span>
+                </button>
               </div>
             </div>
           </div>

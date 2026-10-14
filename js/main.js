@@ -111,11 +111,11 @@ if (header) {
 
 if (processSteps.length && blurOverlay) {
   const showBlur = () => {
-    blurOverlay.style.opacity = "1";
+    blurOverlay.classList.add("is-visible");
   };
 
   const hideBlur = () => {
-    blurOverlay.style.opacity = "0";
+    blurOverlay.classList.remove("is-visible");
   };
 
   processSteps.forEach((step) => {
@@ -394,6 +394,7 @@ if (servicesShowcase && serviceNavItems.length && serviceStage.panel) {
 }
 
 const processPanel = {
+  element: document.querySelector(".process-panel"),
   title: document.querySelector(".process-panel__title"),
   body: document.querySelector(".process-panel__body"),
   pill: document.querySelector(".process-panel__pill"),
@@ -417,6 +418,16 @@ const setActiveProcessStep = (step) => {
   processPanel.pill.textContent = step.dataset.panelLabel || "";
   processPanel.stat.textContent = step.dataset.panelStat || "";
   processPanel.note.textContent = step.dataset.panelNote || "";
+
+  if (!prefersReducedMotion && processPanel.element?.animate) {
+    processPanel.element.animate(
+      [
+        { opacity: 0.68, transform: "translateY(8px)" },
+        { opacity: 1, transform: "translateY(0)" },
+      ],
+      { duration: 280, easing: "ease-out" }
+    );
+  }
 };
 
 if (processSteps.length && processPanel.title) {
@@ -515,9 +526,8 @@ if (workCards.length && workSpotlight.title) {
  * card under the cursor; leaving it eases back up to full speed. The
  * arrows nudge the flow along without changing its speed.
  *
- * This is deliberately exempt from prefers-reduced-motion: the client
- * asked for the row to always move on its own. The rest of the site
- * still honours that setting.
+ * The carousel pauses for reduced-motion preferences and remains usable
+ * through its controls and pointer gestures.
  */
 if (clientSlider && clientTrack) {
   const originalCards = Array.from(clientTrack.children);
@@ -542,6 +552,9 @@ if (clientSlider && clientTrack) {
   let frameId = 0;
   let speed = FLOW_SPEED;
   let targetSpeed = FLOW_SPEED;
+  let dragPointerId = null;
+  let lastPointerX = 0;
+  let pointerTravel = 0;
 
   const prevButton = clientSlider.querySelector("[data-client-prev]");
   const nextButton = clientSlider.querySelector("[data-client-next]");
@@ -602,6 +615,12 @@ if (clientSlider && clientTrack) {
     clientTrack.style.transform = `translate3d(${-offset}px, 0, 0)`;
   };
 
+  const normalizeOffset = () => {
+    if (loopWidth > 0) {
+      offset = ((offset % loopWidth) + loopWidth) % loopWidth;
+    }
+  };
+
   const step = (timestamp) => {
     if (!lastFrame) {
       lastFrame = timestamp;
@@ -638,7 +657,7 @@ if (clientSlider && clientTrack) {
   };
 
   const start = () => {
-    if (frameId) {
+    if (prefersReducedMotion || frameId) {
       return;
     }
 
@@ -662,16 +681,85 @@ if (clientSlider && clientTrack) {
     return first ? first.getBoundingClientRect().width + gap : 220;
   };
 
+  const moveBy = (distance) => {
+    if (prefersReducedMotion) {
+      offset += distance;
+      normalizeOffset();
+      applyOffset();
+      return;
+    }
+
+    nudge += distance;
+  };
+
   if (prevButton) {
     prevButton.addEventListener("click", () => {
-      nudge -= cardStep();
+      moveBy(-cardStep());
     });
   }
 
   if (nextButton) {
     nextButton.addEventListener("click", () => {
-      nudge += cardStep();
+      moveBy(cardStep());
     });
+  }
+
+  const viewport = clientSlider.querySelector(".client-slider__viewport");
+
+  if (viewport) {
+    viewport.addEventListener("dragstart", (event) => {
+      event.preventDefault();
+    });
+
+    viewport.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0 || dragPointerId !== null) {
+        return;
+      }
+
+      dragPointerId = event.pointerId;
+      lastPointerX = event.clientX;
+      pointerTravel = 0;
+      targetSpeed = 0;
+      viewport.classList.add("is-dragging");
+      viewport.setPointerCapture(event.pointerId);
+    });
+
+    viewport.addEventListener("pointermove", (event) => {
+      if (event.pointerId !== dragPointerId) {
+        return;
+      }
+
+      const deltaX = event.clientX - lastPointerX;
+      lastPointerX = event.clientX;
+      pointerTravel += Math.abs(deltaX);
+      offset -= deltaX;
+      normalizeOffset();
+      applyOffset();
+    });
+
+    const finishPointerDrag = (event) => {
+      if (event.pointerId !== dragPointerId) {
+        return;
+      }
+
+      dragPointerId = null;
+      viewport.classList.remove("is-dragging");
+      targetSpeed =
+        event.pointerType === "mouse" && clientSlider.matches(":hover")
+          ? HOVER_SPEED
+          : FLOW_SPEED;
+    };
+
+    viewport.addEventListener("pointerup", finishPointerDrag);
+    viewport.addEventListener("pointercancel", finishPointerDrag);
+    viewport.addEventListener("lostpointercapture", finishPointerDrag);
+    viewport.addEventListener("click", (event) => {
+      if (pointerTravel > 8) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      pointerTravel = 0;
+    }, true);
   }
 
   clientSlider.addEventListener("pointerenter", () => {
@@ -705,7 +793,11 @@ if (clientSlider && clientTrack) {
 
   window.addEventListener("resize", () => {
     window.clearTimeout(resizeTimer);
-    resizeTimer = window.setTimeout(measure, 150);
+    resizeTimer = window.setTimeout(() => {
+      measure();
+      normalizeOffset();
+      applyOffset();
+    }, 150);
   });
 
   cloneCards();

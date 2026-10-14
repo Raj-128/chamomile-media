@@ -99,7 +99,11 @@
       }
     });
 
-    form.addEventListener("submit", () => {
+    form.addEventListener("submit", (event) => {
+      if (event.defaultPrevented) {
+        return;
+      }
+
       if (status) {
         status.textContent = "Sending your inquiry to Chamomile Media...";
         status.dataset.state = "pending";

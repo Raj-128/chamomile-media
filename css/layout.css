@@ -204,6 +204,7 @@
 
 .gallery-tunnel.is-visible .gallery-tunnel__tile--image {
   animation-play-state: running;
+  will-change: transform, opacity;
 }
 
 .gallery-tunnel__tile:nth-child(1) { --tile-phase: 0s; }
@@ -264,6 +265,7 @@
 .section.soft {
   background: var(--bg-soft);
   backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 #process {
@@ -365,6 +367,7 @@
   border: 1px solid rgba(var(--ink-rgb), 0.08);
   box-shadow: var(--shadow-soft);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   position: relative;
   overflow: hidden;
 }
@@ -381,11 +384,18 @@
   position: fixed;
   inset: 0;
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   background: rgba(255, 251, 245, 0.16);
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.35s ease;
+  transition: opacity 0.35s ease, visibility 0.35s;
   z-index: 10;
+}
+
+.process-blur-overlay.is-visible {
+  opacity: 1;
+  visibility: visible;
 }
 
 .about-layout {
@@ -764,5 +774,9 @@
 @media (prefers-reduced-motion: reduce) {
   .gallery-tunnel__tile {
     animation: none;
+  }
+
+  .gallery-tunnel.is-visible .gallery-tunnel__tile--image {
+    will-change: auto;
   }
 }
