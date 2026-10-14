@@ -38,6 +38,13 @@ function doPost(event) {
     return createResponse_("error", formId);
   }
 
+  const timeline = cleanField_(fields.timeline, 120);
+  const services = cleanField_(fields.services, 500);
+  const message = cleanField_(fields.message, 3000);
+  if (formId === "contact-form" && (!timeline || !services || !message)) {
+    return createResponse_("error", formId);
+  }
+
   const lock = LockService.getScriptLock();
   try {
     lock.waitLock(10000);
@@ -63,11 +70,11 @@ function doPost(event) {
       "Email": email,
       "Phone": phone,
       "Brand or Company": cleanField_(fields.company, 160),
-      "Timeline": cleanField_(fields.timeline, 120),
-      "Services": cleanField_(fields.services, 500),
+      "Timeline": timeline,
+      "Services": services,
       "Budget": cleanField_(fields.budget, 120),
       "Goal": cleanField_(fields.goal, 160),
-      "Message": cleanField_(fields.message, 3000),
+      "Message": message,
     };
 
     sheet.appendRow([

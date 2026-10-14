@@ -37,4 +37,8 @@ and phone. Every submission is one row with aligned headers; the notification
 email contains the same fields in a readable, aligned table. The visitor
 sees only the site's confirmation page, never the spreadsheet or other leads.
 
+The contact-page form requires a name, valid email, timeline, at least one
+service, and a project brief. Those required fields are checked in the browser
+and checked again by Apps Script before the submission is saved.
+
 If `data-apps-script-url` is left empty, both forms continue using Netlify Forms.

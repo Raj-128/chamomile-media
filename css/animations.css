@@ -152,12 +152,14 @@ html.reveal-pending .reveal-step {
 .contact-panel,
 .contact-point,
 .contact-option {
-  transform-style: preserve-3d;
-  will-change: transform;
   transition:
     transform 220ms ease,
     box-shadow 220ms ease,
     border-color 220ms ease;
+}
+
+.service-stage {
+  will-change: transform, opacity;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -209,6 +211,10 @@ html.reveal-pending .reveal-step {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .service-stage {
+    will-change: auto;
+  }
+
   .reveal,
   .reveal-step {
     opacity: 1;

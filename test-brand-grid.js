@@ -41,7 +41,8 @@ const path = require("path");
     );
 
     const desktop = await page.evaluate(() => {
-      const grid = document.querySelector(".client-logo-grid");
+      const grid = document.querySelector(".client-slider__track");
+      const viewport = document.querySelector(".client-slider__viewport");
       const hero = document.querySelector(".hero");
       const heading = document.querySelector(".hero-text h1");
       const form = document.querySelector(".hero-inquiry-card");
@@ -62,8 +63,10 @@ const path = require("path");
       ];
       return {
         display: getComputedStyle(grid).display,
-        columns: getComputedStyle(grid).gridTemplateColumns.split(" ").length,
-        clientCount: grid.children.length,
+        clientCount: [...grid.children].filter((card) => !card.hasAttribute("data-client-clone")).length,
+        cloneCount: grid.querySelectorAll("[data-client-clone]").length,
+        serviceCount: document.querySelectorAll("[data-service-item]").length,
+        viewportWidth: viewport.clientWidth,
         cardBackground: getComputedStyle(logoCard).backgroundColor,
         cardBorder: getComputedStyle(logoCard).borderTopStyle,
         logoArtBackground: getComputedStyle(logoCard.querySelector(".client-logo-card__art")).backgroundImage,
@@ -103,9 +106,9 @@ const path = require("path");
       };
     });
 
-    assert.strictEqual(desktop.display, "grid", "brands should use a static grid");
-    assert(desktop.columns >= 5, "desktop should show multiple logo columns");
+    assert.strictEqual(desktop.display, "flex", "brands should use a horizontal carousel track");
     assert(desktop.clientCount >= 24, "all supported brands should be listed");
+    assert.strictEqual(desktop.cloneCount, desktop.clientCount, "the carousel should duplicate its cards for seamless looping");
     assert.strictEqual(desktop.cardBackground, "rgba(0, 0, 0, 0)", "logo cards should have no block background");
     assert.strictEqual(desktop.cardBorder, "none", "logo cards should have no borders");
     assert.strictEqual(desktop.logoArtBackground, "none", "logo images should have no colored side strips");
@@ -138,7 +141,7 @@ const path = require("path");
     ], "work section should show the three requested client and service pairs");
     assert.strictEqual(desktop.workSpotlightClient, "Aarya Group", "work highlight should start with Aarya Group");
     assert.strictEqual(desktop.workSpotlightCategory, "Performance marketing", "work highlight should match its active card");
-    assert.strictEqual(desktop.sliderArrows, 0, "brand carousel controls should be removed");
+    assert.strictEqual(desktop.sliderArrows, 2, "brand carousel should expose previous and next controls");
     assert(desktop.headlineLeft < desktop.formLeft, "hero headline should stay left of the form");
     assert(desktop.heroHeight >= desktop.viewportHeight, "hero should fill the viewport");
 
@@ -155,10 +158,44 @@ const path = require("path");
       "gallery tiles should visibly advance toward the viewer"
     );
 
+    const clientViewportLocator = page.locator(".client-slider__viewport");
+    await clientViewportLocator.evaluate((element) => {
+      element.scrollIntoView({ block: "center", behavior: "instant" });
+    });
+    const clientViewport = await clientViewportLocator.boundingBox();
+    const track = page.locator(".client-slider__track");
+    const offsetBeforeSwipe = await track.evaluate(
+      (element) => new DOMMatrixReadOnly(getComputedStyle(element).transform).m41
+    );
+    await page.mouse.move(clientViewport.x + clientViewport.width / 2, clientViewport.y + clientViewport.height / 2);
+    await page.mouse.down();
+    assert(
+      await page.locator(".client-slider__viewport").evaluate((element) => element.classList.contains("is-dragging")),
+      "pointer down should start carousel dragging"
+    );
+    await page.mouse.move(
+      clientViewport.x + clientViewport.width / 2 - 90,
+      clientViewport.y + clientViewport.height / 2,
+      { steps: 5 }
+    );
+    const offsetDuringSwipe = await track.evaluate(
+      (element) => new DOMMatrixReadOnly(getComputedStyle(element).transform).m41
+    );
+    assert(
+      offsetDuringSwipe < offsetBeforeSwipe - 60,
+      `dragging the brand row should move the carousel in the swipe direction (${offsetBeforeSwipe} to ${offsetDuringSwipe})`
+    );
+    await page.mouse.up();
+
     await page.setViewportSize({ width: 390, height: 844 });
+    await page.waitForTimeout(200);
     const mobile = await page.evaluate(() => ({
-      columns: getComputedStyle(document.querySelector(".client-logo-grid"))
-        .gridTemplateColumns.split(" ").length,
+      visibleCards: Math.round(
+        (document.querySelector(".client-slider__viewport").clientWidth +
+          parseFloat(getComputedStyle(document.querySelector(".client-slider__track")).columnGap)) /
+          (document.querySelector(".client-logo-card").getBoundingClientRect().width +
+            parseFloat(getComputedStyle(document.querySelector(".client-slider__track")).columnGap))
+      ),
       formFits: document.querySelector(".hero-inquiry-card").getBoundingClientRect().right <= innerWidth,
       videoTrackScrollable:
         document.querySelector(".video-showcase__track").scrollWidth >
@@ -166,7 +203,7 @@ const path = require("path");
       horizontalOverflow: document.documentElement.scrollWidth > innerWidth,
     }));
 
-    assert.strictEqual(mobile.columns, 2, "mobile should show two logo columns");
+    assert.strictEqual(mobile.visibleCards, 2, "mobile should show two cards in the carousel viewport");
     assert(mobile.formFits, "inquiry form should fit on mobile");
     assert(mobile.videoTrackScrollable, "video showcase should scroll on mobile");
     assert.strictEqual(mobile.horizontalOverflow, false, "mobile homepage should not overflow horizontally");
@@ -192,26 +229,66 @@ const path = require("path");
 
     await page.goto(`http://127.0.0.1:${address.port}/contact.html`, { waitUntil: "domcontentloaded" });
     assert.strictEqual(
+      await page.locator(".service-pill").count(),
+      desktop.serviceCount,
+      "every homepage service should be available in the inquiry form"
+    );
+    assert.strictEqual(
       await page.locator("#contact-form").getAttribute("action"),
       "thank-you.html",
       "contact confirmation path should remain relative to the deployed site"
     );
+    await page.locator("[data-step-next]").evaluate((button) => {
+      button.scrollIntoView({ block: "center", behavior: "instant" });
+    });
+    await page.waitForFunction(
+      () => getComputedStyle(document.querySelector("#contact-card")).opacity === "1"
+    );
+    await page.locator("[data-step-next]").click();
+    assert.strictEqual(
+      await page.locator("#contact-name").getAttribute("aria-invalid"),
+      "true",
+      "the first step should flag a missing name"
+    );
+    assert.strictEqual(
+      await page.locator("#contact-email").getAttribute("aria-invalid"),
+      "true",
+      "the first step should flag a missing email"
+    );
+    await page.locator("#contact-name").fill("Test visitor");
+    await page.locator("#contact-email").fill("not-an-email");
+    await page.locator("[data-step-next]").click();
+    assert.strictEqual(
+      await page.locator("#contact-email").getAttribute("aria-invalid"),
+      "true",
+      "the first step should flag an invalid email address"
+    );
+    await page.locator("#contact-email").fill("visitor@example.com");
+    await page.locator("[data-step-next]").click();
+    assert.strictEqual(
+      await page.locator("#contact-timeline").isVisible(),
+      true,
+      "valid contact details should advance to the project step"
+    );
+    await page.locator("[data-step-submit]").click();
+    assert.strictEqual(
+      await page.locator("#contact-timeline").getAttribute("aria-invalid"),
+      "true",
+      "the project step should flag a missing timeline"
+    );
+    assert.strictEqual(
+      await page.locator("#service-pill-group").getAttribute("aria-invalid"),
+      "true",
+      "the project step should require at least one selected service"
+    );
+    await page.locator("#contact-timeline").selectOption({ label: "Within 2-4 weeks" });
     const firstServicePill = page.locator(".service-pill").first();
-    await firstServicePill.evaluate((pill) => {
-      pill.scrollIntoView({ block: "center", behavior: "instant" });
-    });
-    await page.waitForFunction(() => {
-      const pill = document.querySelector(".service-pill");
-      return pill && getComputedStyle(pill).visibility === "visible";
-    });
     await firstServicePill.click();
     assert.strictEqual(
       await page.locator("#contact-services").inputValue(),
-      "Brand Strategy",
+      "Social Media Management",
       "selected services should be included in the inquiry form"
     );
-    await page.locator("#contact-name").fill("Test visitor");
-    await page.locator("#contact-email").fill("visitor@example.com");
     await page.locator("#contact-message").fill("Testing the local contact form.");
     await page.locator("#contact-form button[type='submit']").click();
     assert.match(
@@ -284,17 +361,13 @@ const path = require("path");
     await appsScriptPage.goto(`http://127.0.0.1:${address.port}/contact.html`, {
       waitUntil: "domcontentloaded",
     });
-    const appsScriptServicePill = appsScriptPage.locator(".service-pill").first();
-    await appsScriptServicePill.evaluate((pill) => {
-      pill.scrollIntoView({ block: "center", behavior: "instant" });
-    });
-    await appsScriptPage.waitForFunction(
-      () => getComputedStyle(document.querySelector(".service-pill")).visibility === "visible"
-    );
-    await appsScriptServicePill.click();
     await appsScriptPage.locator("#contact-name").fill("Contact form test");
     await appsScriptPage.locator("#contact-email").fill("contact-test@example.com");
     await appsScriptPage.locator("#contact-company").fill("Test Company");
+    await appsScriptPage.locator("[data-step-next]").click();
+    await appsScriptPage.locator("#contact-timeline").selectOption({ label: "Within 2-4 weeks" });
+    const appsScriptServicePill = appsScriptPage.locator(".service-pill").first();
+    await appsScriptServicePill.click();
     await appsScriptPage.locator("#contact-message").fill("Testing contact form routing.");
     await appsScriptPage.locator("#contact-form button[type='submit']").click();
     await appsScriptPage.waitForURL("**/thank-you.html");
@@ -302,10 +375,10 @@ const path = require("path");
     assert.strictEqual(contactSubmission.get("formId"), "contact-form");
     assert.strictEqual(contactSubmission.get("name"), "Contact form test");
     assert.strictEqual(contactSubmission.get("company"), "Test Company");
-    assert.strictEqual(contactSubmission.get("services"), "Brand Strategy");
+    assert.strictEqual(contactSubmission.get("services"), "Social Media Management");
     assert.deepStrictEqual(appsScriptPageErrors, [], "Apps Script form mode should have no JavaScript errors");
 
-    console.log("PASSED: responsive site, both contact forms, Netlify fallback, and Apps Script routing");
+    console.log("PASSED: responsive carousel, two-step intake validation, Netlify fallback, and Apps Script routing");
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));
