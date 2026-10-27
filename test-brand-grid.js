@@ -35,20 +35,25 @@ const path = require("path");
     page.on("pageerror", (error) => pageErrors.push(error.message));
     await page.goto(`http://127.0.0.1:${address.port}/index.html`, { waitUntil: "domcontentloaded" });
     await page.evaluate(() => document.fonts.ready);
+    // Logos are lazy-loaded, so bring the grid into view before waiting on them.
+    await page.locator(".client-logo-grid").scrollIntoViewIfNeeded();
     await page.waitForFunction(() =>
-      [...document.querySelectorAll(".client-logo-card__image")]
+      [...document.querySelectorAll(".client-logo-grid img")]
         .every((image) => image.complete)
+    );
+    await page.waitForFunction(() =>
+      [...document.querySelectorAll(".staircase-card img")]
+        .every((image) => image.complete && image.naturalWidth > 0)
     );
 
     const desktop = await page.evaluate(() => {
-      const grid = document.querySelector(".client-slider__track");
-      const viewport = document.querySelector(".client-slider__viewport");
+      const grid = document.querySelector(".client-logo-grid");
+      const staircase = document.querySelector("[data-staircase-carousel]");
       const hero = document.querySelector(".hero");
       const heading = document.querySelector(".hero-text h1");
       const form = document.querySelector(".hero-inquiry-card");
       const videoTrack = document.querySelector(".video-showcase__track");
-      const logoCard = document.querySelector(".client-logo-card");
-      const fallbackLogo = document.querySelector(".client-logo-card:not(:has(.client-logo-card__image))");
+      const logo = grid.querySelector("img");
       const postHeroSections = [
         ".stats",
         "#about",
@@ -63,24 +68,20 @@ const path = require("path");
       ];
       return {
         display: getComputedStyle(grid).display,
-        clientCount: [...grid.children].filter((card) => !card.hasAttribute("data-client-clone")).length,
-        cloneCount: grid.querySelectorAll("[data-client-clone]").length,
+        columns: getComputedStyle(grid).gridTemplateColumns.split(" ").length,
+        clientCount: grid.children.length,
+        logosLoaded: [...grid.querySelectorAll("img")].every((image) => image.naturalWidth > 0),
+        staircaseWidth: staircase.getBoundingClientRect().width,
+        staircaseLeft: staircase.getBoundingClientRect().left,
+        staircaseSlideCount: document.querySelectorAll(".staircase-card").length,
         serviceCount: document.querySelectorAll("[data-service-item]").length,
-        viewportWidth: viewport.clientWidth,
-        cardBackground: getComputedStyle(logoCard).backgroundColor,
-        cardBorder: getComputedStyle(logoCard).borderTopStyle,
-        logoArtBackground: getComputedStyle(logoCard.querySelector(".client-logo-card__art")).backgroundImage,
-        suppliedNameDisplay: getComputedStyle(logoCard.querySelector(".client-logo-card__name")).display,
-        imageBlendMode: getComputedStyle(logoCard.querySelector(".client-logo-card__image")).mixBlendMode,
-        imageFilter: getComputedStyle(logoCard.querySelector(".client-logo-card__image")).filter,
-        fallbackTileDisplay: getComputedStyle(fallbackLogo.querySelector(".client-logo-card__art")).display,
-        fallbackNameDisplay: getComputedStyle(fallbackLogo.querySelector(".client-logo-card__name")).display,
-        imageFilter: getComputedStyle(logoCard.querySelector(".client-logo-card__image")).filter,
+        imageBlendMode: getComputedStyle(logo).mixBlendMode,
+        imageFilter: getComputedStyle(logo).filter,
+        videoSources: [...document.querySelectorAll(".video-format-card [data-video]")].map((button) => button.dataset.video),
         postHeroBackgrounds: postHeroSections.map((selector) => ({
           selector,
           backgroundImage: getComputedStyle(document.querySelector(selector)).backgroundImage,
         })),
-        gallerySlots: document.querySelectorAll(".gallery-tunnel__tile").length,
         videoCategories: [...document.querySelectorAll(".video-format-card h3")]
           .map((title) => title.textContent.trim()),
         missingFragmentTargets: [...document.querySelectorAll('a[href^="#"]')]
@@ -98,7 +99,6 @@ const path = require("path");
         })),
         workSpotlightClient: document.querySelector(".work-spotlight__title").textContent.trim(),
         workSpotlightCategory: document.querySelector(".work-spotlight__category").textContent.trim(),
-        sliderArrows: document.querySelectorAll(".client-slider__arrow").length,
         headlineLeft: heading.getBoundingClientRect().left,
         formLeft: form.getBoundingClientRect().left,
         heroHeight: Math.round(hero.getBoundingClientRect().height),
@@ -106,15 +106,21 @@ const path = require("path");
       };
     });
 
-    assert.strictEqual(desktop.display, "flex", "brands should use a horizontal carousel track");
+    assert.strictEqual(desktop.display, "grid", "brands should use a static logo grid");
+    assert.strictEqual(desktop.columns, 6, "the brand grid should show six logos per row on desktop");
     assert(desktop.clientCount >= 24, "all supported brands should be listed");
-    assert.strictEqual(desktop.cloneCount, desktop.clientCount, "the carousel should duplicate its cards for seamless looping");
-    assert.strictEqual(desktop.cardBackground, "rgba(0, 0, 0, 0)", "logo cards should have no block background");
-    assert.strictEqual(desktop.cardBorder, "none", "logo cards should have no borders");
-    assert.strictEqual(desktop.logoArtBackground, "none", "logo images should have no colored side strips");
-    assert.notStrictEqual(desktop.suppliedNameDisplay, "none", "supplied logos should show their client name");
-    assert.strictEqual(desktop.fallbackTileDisplay, "none", "missing logo tiles should not show initials blocks");
-    assert.notStrictEqual(desktop.fallbackNameDisplay, "none", "clients without logo files should show plain wordmarks");
+    assert(desktop.logosLoaded, "every brand logo should load");
+    assert.strictEqual(desktop.staircaseWidth, 1440, "the staircase carousel should span the desktop viewport");
+    assert.strictEqual(desktop.staircaseLeft, 0, "the staircase carousel should align with the left viewport edge");
+    assert(desktop.staircaseSlideCount > 0, "the staircase carousel should render its photos");
+    assert.deepStrictEqual(desktop.videoSources, [
+      "assets/videos/ugc.mp4",
+      "assets/videos/ai.mp4",
+      "assets/videos/personal.mp4",
+      "assets/videos/sales.mp4",
+      "assets/videos/influencer.mp4",
+      "assets/videos/podcast.mp4",
+    ], "every video format card should open its sample video");
     assert.strictEqual(desktop.imageFilter, "none", "supplied logos should retain their original colors");
     assert.strictEqual(desktop.imageBlendMode, "normal", "supplied logos should not be color blended");
     assert(
@@ -122,7 +128,6 @@ const path = require("path");
       "every section after the hero should have a background treatment"
     );
     assert.deepStrictEqual(desktop.missingFragmentTargets, [], "all in-page links should have a target");
-    assert.strictEqual(desktop.gallerySlots, 30, "gallery tunnel should provide 30 image slots");
     assert.deepStrictEqual(desktop.videoCategories, [
       "UGC Videos",
       "AI-Generated Videos",
@@ -141,61 +146,53 @@ const path = require("path");
     ], "work section should show the three requested client and service pairs");
     assert.strictEqual(desktop.workSpotlightClient, "Aarya Group", "work highlight should start with Aarya Group");
     assert.strictEqual(desktop.workSpotlightCategory, "Performance marketing", "work highlight should match its active card");
-    assert.strictEqual(desktop.sliderArrows, 2, "brand carousel should expose previous and next controls");
     assert(desktop.headlineLeft < desktop.formLeft, "hero headline should stay left of the form");
     assert(desktop.heroHeight >= desktop.viewportHeight, "hero should fill the viewport");
 
-    const animatedTile = page.locator(".gallery-tunnel__tile--image").first();
-    await animatedTile.waitFor();
-    const initialTileTransform = await animatedTile
-      .evaluate((tile) => getComputedStyle(tile).transform);
-    await page.waitForTimeout(900);
-    const advancedTileTransform = await animatedTile
-      .evaluate((tile) => getComputedStyle(tile).transform);
-    assert.notStrictEqual(
-      advancedTileTransform,
-      initialTileTransform,
-      "gallery tiles should visibly advance toward the viewer"
-    );
 
-    const clientViewportLocator = page.locator(".client-slider__viewport");
-    await clientViewportLocator.evaluate((element) => {
-      element.scrollIntoView({ block: "center", behavior: "instant" });
+    // The staircase advances on its own, even with reduced motion requested.
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    const firstStaircaseImage = () =>
+      page.evaluate(() => document.querySelector(".staircase-card img").getAttribute("src"));
+    const staircaseStart = await page.evaluate(() =>
+      [...document.querySelectorAll(".staircase-slot")].map((slot) => slot.style.transform).join("|")
+    );
+    await page.waitForFunction(
+      (start) =>
+        [...document.querySelectorAll(".staircase-slot")].map((slot) => slot.style.transform).join("|") !== start,
+      staircaseStart,
+      { timeout: 5000 }
+    );
+    assert.ok(await firstStaircaseImage(), "staircase cards should show photos");
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+
+    // Video format cards open a centred, playable dialog that stops when closed.
+    const firstVideo = page.locator(".video-format-card [data-video]").first();
+    await firstVideo.scrollIntoViewIfNeeded();
+    await firstVideo.click();
+    const openDialog = await page.evaluate(() => {
+      const dialog = document.querySelector("[data-video-modal]");
+      const box = dialog.getBoundingClientRect();
+      return {
+        open: dialog.open,
+        src: dialog.querySelector("video").getAttribute("src"),
+        centred: Math.abs(box.left + box.width / 2 - innerWidth / 2) < 2,
+      };
     });
-    const clientViewport = await clientViewportLocator.boundingBox();
-    const track = page.locator(".client-slider__track");
-    const offsetBeforeSwipe = await track.evaluate(
-      (element) => new DOMMatrixReadOnly(getComputedStyle(element).transform).m41
+    assert.deepStrictEqual(openDialog, { open: true, src: "assets/videos/ugc.mp4", centred: true },
+      "clicking a video card should open it centred in the player dialog");
+    await page.keyboard.press("Escape");
+    await page.waitForFunction(
+      () => !document.querySelector("[data-video-modal]").open &&
+        document.querySelector("[data-video-modal] video").getAttribute("src") === null,
+      null,
+      { timeout: 3000 }
     );
-    await page.mouse.move(clientViewport.x + clientViewport.width / 2, clientViewport.y + clientViewport.height / 2);
-    await page.mouse.down();
-    assert(
-      await page.locator(".client-slider__viewport").evaluate((element) => element.classList.contains("is-dragging")),
-      "pointer down should start carousel dragging"
-    );
-    await page.mouse.move(
-      clientViewport.x + clientViewport.width / 2 - 90,
-      clientViewport.y + clientViewport.height / 2,
-      { steps: 5 }
-    );
-    const offsetDuringSwipe = await track.evaluate(
-      (element) => new DOMMatrixReadOnly(getComputedStyle(element).transform).m41
-    );
-    assert(
-      offsetDuringSwipe < offsetBeforeSwipe - 60,
-      `dragging the brand row should move the carousel in the swipe direction (${offsetBeforeSwipe} to ${offsetDuringSwipe})`
-    );
-    await page.mouse.up();
 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForTimeout(200);
     const mobile = await page.evaluate(() => ({
-      visibleCards: Math.round(
-        (document.querySelector(".client-slider__viewport").clientWidth +
-          parseFloat(getComputedStyle(document.querySelector(".client-slider__track")).columnGap)) /
-          (document.querySelector(".client-logo-card").getBoundingClientRect().width +
-            parseFloat(getComputedStyle(document.querySelector(".client-slider__track")).columnGap))
-      ),
+      brandColumns: getComputedStyle(document.querySelector(".client-logo-grid")).gridTemplateColumns.split(" ").length,
       formFits: document.querySelector(".hero-inquiry-card").getBoundingClientRect().right <= innerWidth,
       videoTrackScrollable:
         document.querySelector(".video-showcase__track").scrollWidth >
@@ -203,7 +200,7 @@ const path = require("path");
       horizontalOverflow: document.documentElement.scrollWidth > innerWidth,
     }));
 
-    assert.strictEqual(mobile.visibleCards, 2, "mobile should show two cards in the carousel viewport");
+    assert.strictEqual(mobile.brandColumns, 3, "mobile should show three brands per row");
     assert(mobile.formFits, "inquiry form should fit on mobile");
     assert(mobile.videoTrackScrollable, "video showcase should scroll on mobile");
     assert.strictEqual(mobile.horizontalOverflow, false, "mobile homepage should not overflow horizontally");
@@ -378,7 +375,7 @@ const path = require("path");
     assert.strictEqual(contactSubmission.get("services"), "Social Media Management");
     assert.deepStrictEqual(appsScriptPageErrors, [], "Apps Script form mode should have no JavaScript errors");
 
-    console.log("PASSED: responsive carousel, two-step intake validation, Netlify fallback, and Apps Script routing");
+    console.log("PASSED: staircase, video player, brand grid, two-step intake validation, Netlify fallback, and Apps Script routing");
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));

@@ -21,8 +21,6 @@ const serviceStage = {
   count: document.querySelector("[data-service-count]"),
   progress: document.querySelector("[data-service-progress]"),
 };
-const clientSlider = document.querySelector("[data-client-slider]");
-const clientTrack = document.querySelector("[data-client-track]");
 const isMobileViewport = () => window.matchMedia("(max-width: 900px)").matches;
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const supportsPointerTilt =
@@ -518,329 +516,6 @@ if (workCards.length && workSpotlight.title) {
   });
 }
 
-/*
- * Client carousel.
- *
- * The row scrolls itself, continuously, and never needs to be dragged.
- * Hovering it eases the flow down to a browsing pace and enlarges the
- * card under the cursor; leaving it eases back up to full speed. The
- * arrows nudge the flow along without changing its speed.
- *
- * The carousel pauses for reduced-motion preferences and remains usable
- * through its controls and pointer gestures.
- */
-if (clientSlider && clientTrack) {
-  const originalCards = Array.from(clientTrack.children);
-
-  // Pixels per second. Brisk, but slow enough to read every brand name.
-  const FLOW_SPEED = 52;
-
-  // Pace while the cursor is over the row: slow, not stopped, so the
-  // reader can take a card in without the row feeling stuck.
-  const HOVER_SPEED = 18;
-
-  // How fast the flow eases between those two speeds.
-  const SPEED_EASE = 3.2;
-
-  // How quickly an arrow nudge is absorbed into the flow.
-  const NUDGE_EASE = 4.2;
-
-  let loopWidth = 0;
-  let offset = 0;
-  let nudge = 0;
-  let lastFrame = 0;
-  let frameId = 0;
-  let speed = FLOW_SPEED;
-  let targetSpeed = FLOW_SPEED;
-  let dragPointerId = null;
-  let lastPointerX = 0;
-  let pointerTravel = 0;
-
-  const prevButton = clientSlider.querySelector("[data-client-prev]");
-  const nextButton = clientSlider.querySelector("[data-client-next]");
-
-  /*
-   * Duplicate the set once so the track can wrap without a visible
-   * jump. Clones are hidden from assistive tech: the names are already
-   * announced by the originals.
-   */
-  const cloneCards = () => {
-    clientTrack.querySelectorAll("[data-client-clone]").forEach((clone) => clone.remove());
-
-    originalCards.forEach((card) => {
-      const clone = card.cloneNode(true);
-      clone.setAttribute("data-client-clone", "");
-      clone.setAttribute("aria-hidden", "true");
-      clientTrack.appendChild(clone);
-    });
-  };
-
-  const getVisibleCardCount = () => {
-    if (window.innerWidth <= 640) {
-      return 2;
-    }
-
-    if (window.innerWidth <= 900) {
-      return 3;
-    }
-
-    if (window.innerWidth <= 1200) {
-      return 4;
-    }
-
-    return 5;
-  };
-
-  const measure = () => {
-    const viewport = clientSlider.querySelector(".client-slider__viewport");
-    const gap = parseFloat(window.getComputedStyle(clientTrack).columnGap || "0") || 0;
-
-    if (!viewport) {
-      return;
-    }
-
-    const visibleCardCount = getVisibleCardCount();
-    const cardWidth =
-      (viewport.clientWidth - gap * (visibleCardCount - 1)) / visibleCardCount;
-
-    clientTrack.querySelectorAll(".client-logo-card").forEach((card) => {
-      card.style.width = `${cardWidth}px`;
-      card.style.minWidth = `${cardWidth}px`;
-    });
-
-    loopWidth = originalCards.length * (cardWidth + gap);
-  };
-
-  const applyOffset = () => {
-    clientTrack.style.transform = `translate3d(${-offset}px, 0, 0)`;
-  };
-
-  const normalizeOffset = () => {
-    if (loopWidth > 0) {
-      offset = ((offset % loopWidth) + loopWidth) % loopWidth;
-    }
-  };
-
-  const step = (timestamp) => {
-    if (!lastFrame) {
-      lastFrame = timestamp;
-    }
-
-    // Clamped so a backgrounded tab does not resume with a huge jump.
-    const delta = Math.min((timestamp - lastFrame) / 1000, 0.05);
-    lastFrame = timestamp;
-
-    // Ease towards the target pace rather than snapping to it, so the
-    // row never jumps when the cursor crosses its edge.
-    speed += (targetSpeed - speed) * Math.min(delta * SPEED_EASE, 1);
-
-    let movement = speed * delta;
-
-    if (nudge !== 0) {
-      const chunk = nudge * Math.min(delta * NUDGE_EASE, 1);
-      movement += chunk;
-      nudge -= chunk;
-
-      if (Math.abs(nudge) < 0.4) {
-        nudge = 0;
-      }
-    }
-
-    offset += movement;
-
-    if (loopWidth > 0) {
-      offset = ((offset % loopWidth) + loopWidth) % loopWidth;
-    }
-
-    applyOffset();
-    frameId = requestAnimationFrame(step);
-  };
-
-  const start = () => {
-    if (prefersReducedMotion || frameId) {
-      return;
-    }
-
-    lastFrame = 0;
-    frameId = requestAnimationFrame(step);
-  };
-
-  const stop = () => {
-    if (!frameId) {
-      return;
-    }
-
-    cancelAnimationFrame(frameId);
-    frameId = 0;
-  };
-
-  const cardStep = () => {
-    const gap = parseFloat(window.getComputedStyle(clientTrack).columnGap || "0") || 0;
-    const first = clientTrack.firstElementChild;
-
-    return first ? first.getBoundingClientRect().width + gap : 220;
-  };
-
-  const moveBy = (distance) => {
-    if (prefersReducedMotion) {
-      offset += distance;
-      normalizeOffset();
-      applyOffset();
-      return;
-    }
-
-    nudge += distance;
-  };
-
-  if (prevButton) {
-    prevButton.addEventListener("click", () => {
-      moveBy(-cardStep());
-    });
-  }
-
-  if (nextButton) {
-    nextButton.addEventListener("click", () => {
-      moveBy(cardStep());
-    });
-  }
-
-  const viewport = clientSlider.querySelector(".client-slider__viewport");
-
-  if (viewport) {
-    viewport.addEventListener("dragstart", (event) => {
-      event.preventDefault();
-    });
-
-    viewport.addEventListener("pointerdown", (event) => {
-      if (event.button !== 0 || dragPointerId !== null) {
-        return;
-      }
-
-      dragPointerId = event.pointerId;
-      lastPointerX = event.clientX;
-      pointerTravel = 0;
-      targetSpeed = 0;
-      viewport.classList.add("is-dragging");
-      viewport.setPointerCapture(event.pointerId);
-    });
-
-    viewport.addEventListener("pointermove", (event) => {
-      if (event.pointerId !== dragPointerId) {
-        return;
-      }
-
-      const deltaX = event.clientX - lastPointerX;
-      lastPointerX = event.clientX;
-      pointerTravel += Math.abs(deltaX);
-      offset -= deltaX;
-      normalizeOffset();
-      applyOffset();
-    });
-
-    const finishPointerDrag = (event) => {
-      if (event.pointerId !== dragPointerId) {
-        return;
-      }
-
-      dragPointerId = null;
-      viewport.classList.remove("is-dragging");
-      targetSpeed =
-        event.pointerType === "mouse" && clientSlider.matches(":hover")
-          ? HOVER_SPEED
-          : FLOW_SPEED;
-    };
-
-    viewport.addEventListener("pointerup", finishPointerDrag);
-    viewport.addEventListener("pointercancel", finishPointerDrag);
-    viewport.addEventListener("lostpointercapture", finishPointerDrag);
-    viewport.addEventListener("click", (event) => {
-      if (pointerTravel > 8) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-      pointerTravel = 0;
-    }, true);
-  }
-
-  clientSlider.addEventListener("pointerenter", () => {
-    targetSpeed = HOVER_SPEED;
-  });
-
-  clientSlider.addEventListener("pointerleave", () => {
-    targetSpeed = FLOW_SPEED;
-  });
-
-  clientSlider.addEventListener("focusin", () => {
-    targetSpeed = HOVER_SPEED;
-  });
-
-  clientSlider.addEventListener("focusout", (event) => {
-    if (!clientSlider.contains(event.relatedTarget)) {
-      targetSpeed = FLOW_SPEED;
-    }
-  });
-
-  // Only the tab going away stops the flow.
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-      stop();
-    } else {
-      start();
-    }
-  });
-
-  let resizeTimer = 0;
-
-  window.addEventListener("resize", () => {
-    window.clearTimeout(resizeTimer);
-    resizeTimer = window.setTimeout(() => {
-      measure();
-      normalizeOffset();
-      applyOffset();
-    }, 150);
-  });
-
-  cloneCards();
-  measure();
-
-  // Images settle after load and change the card height, not the width,
-  // but re-measuring keeps the loop exact if a font swap shifts widths.
-  window.addEventListener("load", measure);
-
-  start();
-}
-
-const clientLogoImages = Array.from(document.querySelectorAll(".client-logo-card__image"));
-
-if (clientLogoImages.length) {
-  clientLogoImages.forEach((image) => {
-    const art = image.closest(".client-logo-card__art");
-
-    if (!art) {
-      return;
-    }
-
-    const showImage = () => {
-      art.classList.add("has-image");
-    };
-
-    const showFallback = () => {
-      art.classList.remove("has-image");
-    };
-
-    if (image.complete) {
-      if (image.naturalWidth > 0) {
-        showImage();
-      } else {
-        showFallback();
-      }
-    }
-
-    image.addEventListener("load", showImage, { once: true });
-    image.addEventListener("error", showFallback, { once: true });
-  });
-}
-
 const sections = Array.from(document.querySelectorAll("main section[id]"));
 const navLinks = Array.from(document.querySelectorAll(".primary-nav a[href^='#']"));
 
@@ -880,4 +555,31 @@ if (sections.length && navLinks.length) {
   window.addEventListener("resize", syncActiveNavLink);
   window.addEventListener("load", syncActiveNavLink);
   window.addEventListener("hashchange", syncActiveNavLink);
+}
+
+const videoModal = document.querySelector("[data-video-modal]");
+
+if (videoModal) {
+  const player = videoModal.querySelector("video");
+
+  document.querySelectorAll("[data-video]").forEach((button) => {
+    button.addEventListener("click", () => {
+      player.src = button.dataset.video;
+      videoModal.showModal();
+      player.play().catch(() => {});
+    });
+  });
+
+  // Close on backdrop click; stop playback whenever the dialog closes.
+  videoModal.addEventListener("click", (event) => {
+    if (event.target === videoModal) {
+      videoModal.close();
+    }
+  });
+
+  videoModal.addEventListener("close", () => {
+    player.pause();
+    player.removeAttribute("src");
+    player.load();
+  });
 }

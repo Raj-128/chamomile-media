@@ -13,6 +13,10 @@ client list are static content; there is no custom admin dashboard or CMS.
 - [`contact.html`](./contact.html) — Contact form and project inquiry details.
 - [`thank-you.html`](./thank-you.html) — Confirmation page used after a
   successful Netlify form submission.
+- `assets/images/creative-carousel/` — Stills from Chamomile Media shoots used by
+  the homepage staircase carousel (`frame-001.jpg` onwards).
+- `assets/videos/` — Sample clips and poster frames for the "Video Formats We
+  Create" cards (H.264 MP4, 720×1280).
 
 ## Project structure
 
@@ -68,6 +72,18 @@ configured on both forms before that integration becomes active.
 The detailed contact form is a two-step client-side wizard. It requires a name,
 valid email, timeline, at least one listed service, and a short project brief.
 The service choices match the offerings shown on the homepage.
+
+The homepage hero runs a staircase carousel behind the headline and form: the
+centre photo sits level in the gap between them, earlier photos step up to the
+top-left and later ones step down to the bottom-right. It advances once a second
+and loops through every image in `assets/images/creative-carousel/`; the count
+comes from `data-frame-count` on the carousel element in `index.html`. It keeps
+running even when the visitor's system requests reduced motion.
+
+Each "Video Formats We Create" card opens its clip in a native `<dialog>`
+player; closing the dialog stops and unloads the video. The client section is a
+static grid of original-colour logos, with plain wordmarks for brands that have
+no logo file yet.
 
 ## Optional GitHub Pages mirror
 

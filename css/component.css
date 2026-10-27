@@ -505,29 +505,114 @@
   position: relative;
   display: grid;
   place-items: center;
+  width: 100%;
   aspect-ratio: 9 / 16;
   overflow: hidden;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
   background:
     radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.84), transparent 38%),
     linear-gradient(145deg, #8cc4d5, #347f9b);
 }
 
-.video-format-card__media::before,
-.video-format-card__media::after {
+.video-format-card__media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 500ms ease;
+}
+
+.video-format-card__media:hover img,
+.video-format-card__media:focus-visible img {
+  transform: scale(1.05);
+}
+
+.video-format-card__media:focus-visible {
+  outline: 3px solid var(--green-main);
+  outline-offset: -3px;
+}
+
+.video-format-card__play {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 10px 26px rgba(var(--ink-rgb), 0.28);
+  transition: transform 220ms ease;
+}
+
+.video-format-card__play::after {
   content: "";
   position: absolute;
-  width: 54%;
-  aspect-ratio: 1;
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  top: 50%;
+  left: 54%;
+  border-style: solid;
+  border-width: 10px 0 10px 16px;
+  border-color: transparent transparent transparent var(--green-main);
+  transform: translate(-50%, -50%);
+}
+
+.video-format-card__media:hover .video-format-card__play {
+  transform: scale(1.1);
+}
+
+.video-modal {
+  /* The global reset strips the UA's auto margin that centres dialogs. */
+  margin: auto;
+  width: min(92vw, 420px);
+  max-height: 92vh;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  border-radius: 22px;
+  background: #000;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+}
+
+.video-modal::backdrop {
+  background: rgba(var(--ink-rgb), 0.72);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.video-modal__player {
+  display: block;
+  width: 100%;
+  max-height: 92vh;
+  aspect-ratio: 9 / 16;
+  border-radius: 22px;
+  background: #000;
+}
+
+.video-modal__close {
+  position: absolute;
+  z-index: 1;
+  top: -14px;
+  right: -14px;
+  width: 44px;
+  height: 44px;
+  border: 0;
   border-radius: 50%;
+  background: #fff;
+  color: var(--text-main);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
-.video-format-card__media::before {
-  transform: translate(-22%, -12%);
-}
-
-.video-format-card__media::after {
-  transform: translate(22%, 18%) scale(0.72);
+@media (max-width: 640px) {
+  .video-modal__close {
+    top: 8px;
+    right: 8px;
+  }
 }
 
 .video-format-card__media--ai {
@@ -562,6 +647,7 @@
 
 .video-format-card__badge {
   position: absolute;
+  z-index: 1;
   right: 10px;
   bottom: 10px;
   padding: 5px 9px;
@@ -1237,130 +1323,66 @@
   color: var(--text-muted);
 }
 
-.client-slider {
-  position: relative;
-  margin-top: 30px;
-}
-
-.client-slider__viewport {
-  overflow: hidden;
-  padding: 10px 0 6px;
-}
-
-.client-slider::before,
-.client-slider::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 96px;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.client-slider::before {
-  left: 0;
-  background: linear-gradient(90deg, rgba(251, 245, 236, 1), rgba(251, 245, 236, 0));
-}
-
-.client-slider::after {
-  right: 0;
-  background: linear-gradient(270deg, rgba(251, 245, 236, 1), rgba(251, 245, 236, 0));
-}
-
-.client-slider__track {
-  display: flex;
-  gap: 20px;
-  width: max-content;
-  transform: translateX(0);
-}
-
-.client-logo-card {
-  padding: 20px 18px;
-  border-radius: 24px;
-  background: rgba(255, 251, 245, 0.72);
-  border: 1px solid rgba(var(--ink-rgb), 0.08);
-  box-shadow: 0 14px 28px rgba(var(--ink-rgb), 0.08);
+/* Static logo wall: original-colour logos on white, no cards, no hover tint. */
+.client-logo-grid {
   display: grid;
-  gap: 14px;
-  justify-items: center;
-  text-align: center;
-  flex: 0 0 auto;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: clamp(18px, 3vw, 40px) clamp(12px, 2vw, 28px);
+  margin: clamp(28px, 4vw, 44px) 0 0;
+  padding: clamp(24px, 4vw, 48px) clamp(16px, 3vw, 40px);
+  list-style: none;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 18px 40px rgba(var(--ink-rgb), 0.06);
 }
 
-.client-logo-card__art {
-  position: relative;
-  overflow: hidden;
-  width: 76px;
-  height: 76px;
-  border-radius: 22px;
+.client-logo-grid__item {
   display: grid;
   place-items: center;
-  background:
-    radial-gradient(circle at 30% 25%, rgba(var(--brand-accent-rgb), 0.45), transparent 34%),
-    linear-gradient(135deg, rgba(var(--brand-primary-rgb), 0.9), rgba(var(--brand-petal-rgb), 0.38));
-  box-shadow: 0 14px 24px rgba(0, 0, 0, 0.22);
+  min-height: 110px;
+  text-align: center;
 }
 
-.client-logo-card__image {
-  position: absolute;
-  inset: 0;
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0;
-  transform: scale(1.05);
-  transition:
-    opacity 220ms ease,
-    transform 220ms ease;
+.client-logo-grid__item img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
 }
 
-.client-logo-card:nth-child(3n) .client-logo-card__art,
-.client-logo-card:nth-child(3n + 1) .client-logo-card__art {
-  background:
-    radial-gradient(circle at 30% 25%, rgba(var(--brand-accent-rgb), 0.52), transparent 34%),
-    linear-gradient(135deg, rgba(var(--brand-primary-rgb), 0.84), rgba(var(--brand-petal-rgb), 0.34));
-}
-
-.client-logo-card:nth-child(3n + 2) .client-logo-card__art {
-  background:
-    radial-gradient(circle at 65% 20%, rgba(var(--brand-primary-rgb), 0.45), transparent 32%),
-    linear-gradient(135deg, rgba(var(--brand-accent-rgb), 0.82), rgba(var(--brand-primary-rgb), 0.42));
-}
-
-.client-logo-card__art span {
-  transition:
-    opacity 220ms ease,
-    transform 220ms ease;
-  color: #fff8ed;
-  font-family: var(--font-display);
-  font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-}
-
-.client-logo-card__art.has-image {
-  background: rgba(255, 251, 245, 0.28);
-  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.16);
-}
-
-.client-logo-card__art.has-image .client-logo-card__image {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.client-logo-card__art.has-image span {
-  opacity: 0;
-  transform: scale(0.92);
-}
-
-.client-logo-card__name {
+.client-logo-grid__wordmark {
   color: var(--text-main);
   font-family: var(--font-display);
-  font-size: 1rem;
+  font-size: clamp(0.95rem, 1.3vw, 1.12rem);
+  font-weight: 700;
   line-height: 1.25;
-  width: 100%;
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 1024px) {
+  .client-logo-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .client-logo-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .client-logo-grid__item {
+    min-height: 88px;
+  }
+
+  .client-logo-grid__item img {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+@media (max-width: 360px) {
+  .client-logo-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .testimonial-card {
@@ -1880,36 +1902,6 @@
     font-size: 0.96rem;
   }
 
-  .client-slider {
-    margin-top: 24px;
-  }
-
-  .client-slider::before,
-  .client-slider::after {
-    width: 34px;
-  }
-
-  .client-logo-card {
-    padding: 18px 14px;
-    border-radius: 22px;
-    gap: 10px;
-  }
-
-  .client-logo-card__art {
-    width: 64px;
-    height: 64px;
-    border-radius: 18px;
-  }
-
-  .client-logo-card__art span {
-    font-size: 1.1rem;
-  }
-
-  .client-logo-card__name {
-    font-size: 0.84rem;
-    line-height: 1.3;
-  }
-
   .work-card {
     min-height: 220px;
     padding: 24px 20px;
@@ -2067,6 +2059,10 @@
     justify-items: center;
   }
 
+  .footer-column a {
+    padding: 10px 0;
+  }
+
   .footer-bottom .container {
     justify-content: center;
     text-align: center;
@@ -2110,7 +2106,6 @@
   .hero-proof span { font-size: .72rem; }
   .services-showcase { padding: 20px 14px; }
   .service-stage, .work-card, .work-spotlight, .testimonial-card { padding-left: 16px; padding-right: 16px; }
-  .client-logo-card__name { font-size: .78rem; }
 }
 
 /* Mobile completeness: keep every service available instead of hiding the selector. */
@@ -2135,7 +2130,6 @@
   }
 }
 
-
 /* ==========================================================================
    Client carousel
    --------------------------------------------------------------------------
@@ -2143,48 +2137,8 @@
    updated on animation frames, so CSS transitions must not compete with it.
    ========================================================================== */
 
-.client-slider__viewport {
-  /* Vertical room so a lifted, scaled card is never clipped. */
-  padding: 26px 0 26px;
-}
-
-.client-slider__track {
-  display: flex;
-  gap: 20px;
-  width: max-content;
-  will-change: transform;
-  /* Position comes from requestAnimationFrame; a CSS transition here would
-     fight it and make the row stutter. */
-  transition: none;
-}
-
-.client-logo-card {
-  flex: 0 0 auto;
-  transform-origin: center center;
-  transition:
-    transform 460ms cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 460ms ease,
-    border-color 460ms ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .client-logo-card:hover,
-  .client-logo-card:focus-within {
-    transform: translateY(-6px) scale(1.09);
-    z-index: 4;
-    border-color: rgba(var(--brand-primary-rgb), 0.34);
-    box-shadow: 0 26px 48px rgba(var(--ink-rgb), 0.16);
-  }
-
-  .client-logo-card:hover .client-logo-card__name,
-  .client-logo-card:focus-within .client-logo-card__name {
-    color: var(--brand-primary, var(--text-main));
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .gallery-tunnel__tile--image,
-  .service-stage,
+    .service-stage,
   .process-step:hover,
   .process-step:focus-visible {
     will-change: auto;
@@ -2192,227 +2146,88 @@
 }
 
 /* Arrows */
-.client-slider__arrow {
-  position: absolute;
-  top: 50%;
-  z-index: 5;
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  transform: translateY(-50%);
-  border-radius: 50%;
-  border: 1px solid rgba(var(--ink-rgb), 0.12);
-  background: rgba(255, 251, 245, 0.94);
-  box-shadow: 0 10px 24px rgba(var(--ink-rgb), 0.14);
-  color: var(--text-main);
-  font-size: 1.5rem;
-  line-height: 1;
-  cursor: pointer;
-  transition:
-    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
-    background 320ms ease,
-    box-shadow 320ms ease;
-}
-
-.client-slider__arrow span {
-  display: block;
-  margin-top: -3px;
-}
-
-.client-slider__arrow--prev {
-  left: -6px;
-}
-
-.client-slider__arrow--next {
-  right: -6px;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .client-slider__arrow:hover {
-    background: #fff;
-    transform: translateY(-50%) scale(1.08);
-    box-shadow: 0 14px 30px rgba(var(--ink-rgb), 0.2);
-  }
-}
-
-.client-slider__arrow:focus-visible {
-  outline: 2px solid rgba(var(--brand-primary-rgb), 0.72);
-  outline-offset: 3px;
-}
 
 /* Edge fades sit under the arrows and must never eat a whole card. */
-.client-slider::before,
-.client-slider::after {
-  width: 60px;
-}
-
-@media (max-width: 900px) {
-  .client-slider__arrow {
-    width: 38px;
-    height: 38px;
-    font-size: 1.3rem;
-  }
-
-  .client-slider__arrow--prev {
-    left: -10px;
-  }
-
-  .client-slider__arrow--next {
-    right: -10px;
-  }
-}
-
-@media (max-width: 640px) {
-  .client-slider__viewport {
-    padding: 18px 0;
-  }
-
-  .client-slider::before,
-  .client-slider::after {
-    width: 26px;
-  }
-
-}
 
 /* Fade the row's edges with a mask rather than a painted gradient, so the
    fade matches whatever the panel background is instead of guessing a
    colour that only lines up on one section. */
-.client-slider::before,
-.client-slider::after {
-  display: none;
-}
-
-.client-slider__viewport {
-  -webkit-mask-image: linear-gradient(
-    90deg,
-    transparent 0,
-    #000 7%,
-    #000 93%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    90deg,
-    transparent 0,
-    #000 7%,
-    #000 93%,
-    transparent 100%
-  );
-}
-
-@media (max-width: 640px) {
-  .client-slider__viewport {
-    -webkit-mask-image: linear-gradient(
-      90deg,
-      transparent 0,
-      #000 5%,
-      #000 95%,
-      transparent 100%
-    );
-    mask-image: linear-gradient(
-      90deg,
-      transparent 0,
-      #000 5%,
-      #000 95%,
-      transparent 100%
-    );
-  }
-
-  .client-slider__arrow {
-    width: 34px;
-    height: 34px;
-    font-size: 1.15rem;
-  }
-
-  .client-slider__arrow--prev {
-    left: -16px;
-  }
-
-  .client-slider__arrow--next {
-    right: -16px;
-  }
-}
-
-.client-logo-wall {
-  margin-top: 30px;
-}
-
-.client-logo-card {
-  width: 190px;
-  min-width: 0;
-  min-height: 126px;
-  padding: 10px 8px;
-  flex: 0 0 auto;
-  align-content: center;
-  gap: 8px;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.client-logo-card__art {
-  width: min(100%, 170px);
-  height: 84px;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-.client-logo-card:nth-child(3n) .client-logo-card__art,
-.client-logo-card:nth-child(3n + 1) .client-logo-card__art,
-.client-logo-card:nth-child(3n + 2) .client-logo-card__art {
-  background: none;
-  box-shadow: none;
-}
-
-.client-logo-card__art:not(.has-image) {
-  display: none;
-}
-
-.client-logo-card__image {
-  padding: 0;
-  object-fit: contain;
-  transform: none;
-  opacity: 0.76;
-}
-
-.client-logo-card__art.has-image {
-  background: transparent;
-  box-shadow: none;
-}
-
-.client-logo-card__name {
-  color: rgba(var(--ink-rgb), 0.76);
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  font-weight: 700;
-  line-height: 1.3;
-  letter-spacing: 0.01em;
-  text-align: center;
-}
-
-@media (max-width: 640px) {
-  .client-logo-card {
-    min-height: 114px;
-    padding: 8px 4px;
-  }
-}
-
-.client-slider__viewport {
-  touch-action: pan-y;
-  cursor: grab;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.client-slider__viewport.is-dragging {
-  cursor: grabbing;
-}
 
 @media (hover: hover) and (pointer: fine) {
   .process-step:hover,
   .process-step:focus-visible {
     will-change: transform;
   }
+}
+
+.staircase-carousel {
+  --stair-w: 240px;
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(255, 255, 255, 0.74), transparent 54%),
+    linear-gradient(180deg, rgba(250, 249, 246, 0.92), rgba(232, 229, 223, 0.88));
+}
+
+/* Soft brand-colour wash drifting behind the staircase; transform-only so it stays cheap. */
+.staircase-carousel::before {
+  content: "";
+  position: absolute;
+  inset: -25%;
+  background:
+    radial-gradient(circle at 22% 30%, rgba(var(--brand-primary-rgb), 0.22), transparent 34%),
+    radial-gradient(circle at 78% 70%, rgba(var(--brand-accent-rgb), 0.2), transparent 32%),
+    radial-gradient(circle at 70% 22%, rgba(var(--brand-petal-rgb), 0.5), transparent 30%),
+    radial-gradient(circle at 30% 78%, rgba(157, 200, 217, 0.32), transparent 34%);
+  animation: hero-wash 18s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes hero-wash {
+  0% {
+    transform: translate3d(-6%, -4%, 0) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translate3d(5%, 3%, 0) rotate(8deg) scale(1.08);
+  }
+  100% {
+    transform: translate3d(-3%, 6%, 0) rotate(-6deg) scale(1.04);
+  }
+}
+
+/* Staircase: the centre photo sits level at full size, photos before it step up
+   a storey (top-left), photos after it step down one (bottom-right). The strip
+   glides on a spring; each photo eases to its new step. */
+.staircase-slot {
+  position: absolute;
+  top: calc(var(--stair-y, 50%) - var(--stair-w) * 2 / 3);
+  left: calc(var(--stair-x, 50%) - var(--stair-w) / 2);
+  width: var(--stair-w);
+  transition: transform var(--stair-spring-ms, 900ms) var(--stair-spring, ease-out);
+  will-change: transform;
+}
+
+.staircase-card {
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: #d9d5cc;
+  box-shadow: 0 24px 58px rgba(49, 45, 37, 0.2);
+  transition: transform 600ms ease-in-out;
+  will-change: transform;
+}
+
+.staircase-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+}
+
+.staircase-slot.is-jumping,
+.staircase-slot.is-jumping .staircase-card {
+  transition: none;
 }
