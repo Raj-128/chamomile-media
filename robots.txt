@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# SEO go-live: replace YOUR-DOMAIN, then uncomment.
+# Sitemap: https://YOUR-DOMAIN/sitemap.xml

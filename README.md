@@ -14,7 +14,7 @@ client list are static content; there is no custom admin dashboard or CMS.
 - [`thank-you.html`](./thank-you.html) — Confirmation page used after a
   successful Netlify form submission.
 - `assets/images/creative-carousel/` — Stills from Chamomile Media shoots used by
-  the homepage staircase carousel (`frame-001.jpg` onwards).
+  the homepage staircase carousel (`frame-001.webp` onwards).
 - `assets/videos/` — Sample clips and poster frames for the "Video Formats We
   Create" cards (H.264 MP4, 720×1280).
 
@@ -84,6 +84,34 @@ Each "Video Formats We Create" card opens its clip in a native `<dialog>`
 player; closing the dialog stops and unloads the video. The client section is a
 static grid of original-colour logos, with plain wordmarks for brands that have
 no logo file yet.
+
+## SEO go-live
+
+The SEO groundwork is in place but switched off until the site has its final
+domain. Every spot that needs filling is marked `SEO go-live` or `YOUR-DOMAIN`.
+
+1. **Domain.** Replace `https://YOUR-DOMAIN` with the live address (for example
+   `https://chamomilemedia.in`) in `index.html`, `contact.html`,
+   `thank-you.html`, `robots.txt` and `sitemap.xml`, then uncomment the
+   `SEO go-live` blocks in those files.
+2. **Google Search Console.** Add the domain as a property. Choose the "HTML
+   tag" method, paste its code into the `google-site-verification` tag in
+   `index.html`, deploy, then press Verify. Under *Sitemaps*, submit
+   `sitemap.xml`. Use *URL Inspection* on the homepage and contact page and
+   press *Request indexing*; check *Pages* after a few days to confirm both are
+   indexed.
+3. **Google Analytics.** Create a GA4 property and web stream, copy its
+   Measurement ID (`G-…`) into `GA_MEASUREMENT_ID` in `js/analytics.js`, and
+   deploy. In GA4, mark the `thank-you.html` page view as a key event to count
+   form leads.
+4. **Forms.** In Netlify, enable form detection and add an email notification
+   for new submissions. To also log inquiries in Google Sheets, deploy
+   `backend/Code.gs` and paste its URL into `data-apps-script-url` on both forms.
+5. **Check.** Run Lighthouse (mobile) on the live URL and test the share preview
+   by pasting the link into WhatsApp or LinkedIn.
+
+`thank-you.html` carries `noindex`, so it stays out of search results; it is
+left crawlable in `robots.txt` so Google can see that tag.
 
 ## Optional GitHub Pages mirror
 

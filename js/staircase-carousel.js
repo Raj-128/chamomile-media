@@ -8,7 +8,7 @@
   // Photos from the shoot plus one still from each video clip.
   const FRAME_COUNT = Number(carousel.dataset.frameCount) || 0;
   const images = Array.from({ length: FRAME_COUNT }, (_, i) =>
-    `assets/images/creative-carousel/frame-${String(i + 1).padStart(3, "0")}.jpg`
+    `assets/images/creative-carousel/frame-${String(i + 1).padStart(3, "0")}.webp`
   );
   const AUTOPLAY_DELAY = 1000;
   const INACTIVE_SCALE = 0.7;
