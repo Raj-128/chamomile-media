@@ -312,10 +312,8 @@ if (servicesShowcase && serviceNavItems.length && serviceStage.panel) {
   };
 
   const queueNextService = () => {
+    // Always cycles, even under reduced-motion settings, so every service gets shown.
     stopServiceCycle();
-    if (prefersReducedMotion) {
-      return;
-    }
     restartServiceProgress();
     serviceCycleId = window.setTimeout(() => {
       activateService((activeServiceIndex + 1) % totalServices);
@@ -373,15 +371,6 @@ if (servicesShowcase && serviceNavItems.length && serviceStage.panel) {
         activate();
       }
     });
-  });
-
-  servicesShowcase.addEventListener("mouseenter", stopServiceCycle);
-  servicesShowcase.addEventListener("mouseleave", queueNextService);
-  servicesShowcase.addEventListener("focusin", stopServiceCycle);
-  servicesShowcase.addEventListener("focusout", (event) => {
-    if (!servicesShowcase.contains(event.relatedTarget)) {
-      queueNextService();
-    }
   });
 
   window.addEventListener("resize", () => {
