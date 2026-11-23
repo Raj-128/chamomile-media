@@ -1,0 +1,8 @@
+# Reference captures & test assets
+.playwright-mcp/
+*.zip
+
+# Dependencies & OS artifacts
+node_modules/
+.DS_Store
+Thumbs.db

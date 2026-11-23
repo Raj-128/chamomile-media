@@ -41,14 +41,9 @@ const path = require("path");
       [...document.querySelectorAll(".client-logo-grid img")]
         .every((image) => image.complete)
     );
-    await page.waitForFunction(() =>
-      [...document.querySelectorAll(".staircase-card img")]
-        .every((image) => image.complete && image.naturalWidth > 0)
-    );
 
     const desktop = await page.evaluate(() => {
       const grid = document.querySelector(".client-logo-grid");
-      const staircase = document.querySelector("[data-staircase-carousel]");
       const hero = document.querySelector(".hero");
       const heading = document.querySelector(".hero-text h1");
       const form = document.querySelector(".hero-inquiry-card");
@@ -71,9 +66,9 @@ const path = require("path");
         columns: getComputedStyle(grid).gridTemplateColumns.split(" ").length,
         clientCount: grid.children.length,
         logosLoaded: [...grid.querySelectorAll("img")].every((image) => image.naturalWidth > 0),
-        staircaseWidth: staircase.getBoundingClientRect().width,
-        staircaseLeft: staircase.getBoundingClientRect().left,
-        staircaseSlideCount: document.querySelectorAll(".staircase-card").length,
+        heroWidth: hero.getBoundingClientRect().width,
+        heroLeft: hero.getBoundingClientRect().left,
+        heroProofPills: [...document.querySelectorAll(".hero-proof span")].map((pill) => pill.textContent.trim()),
         serviceCount: document.querySelectorAll("[data-service-item]").length,
         imageBlendMode: getComputedStyle(logo).mixBlendMode,
         imageFilter: getComputedStyle(logo).filter,
@@ -110,9 +105,13 @@ const path = require("path");
     assert.strictEqual(desktop.columns, 6, "the brand grid should show six logos per row on desktop");
     assert(desktop.clientCount >= 24, "all supported brands should be listed");
     assert(desktop.logosLoaded, "every brand logo should load");
-    assert.strictEqual(desktop.staircaseWidth, 1440, "the staircase carousel should span the desktop viewport");
-    assert.strictEqual(desktop.staircaseLeft, 0, "the staircase carousel should align with the left viewport edge");
-    assert(desktop.staircaseSlideCount > 0, "the staircase carousel should render its photos");
+    assert.strictEqual(desktop.heroWidth, 1440, "the hero should span the desktop viewport");
+    assert.strictEqual(desktop.heroLeft, 0, "the hero should align with the left viewport edge");
+    assert.deepStrictEqual(desktop.heroProofPills, [
+      "Clarity-led",
+      "Creative + Strategy",
+      "Online + Offline",
+    ], "hero should display the proof pills");
     assert.deepStrictEqual(desktop.videoSources, [
       "assets/videos/ugc.mp4",
       "assets/videos/ai.mp4",
@@ -149,22 +148,6 @@ const path = require("path");
     assert(desktop.headlineLeft < desktop.formLeft, "hero headline should stay left of the form");
     assert(desktop.heroHeight >= desktop.viewportHeight, "hero should fill the viewport");
 
-
-    // The staircase advances on its own, even with reduced motion requested.
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    const firstStaircaseImage = () =>
-      page.evaluate(() => document.querySelector(".staircase-card img").getAttribute("src"));
-    const staircaseStart = await page.evaluate(() =>
-      [...document.querySelectorAll(".staircase-slot")].map((slot) => slot.style.transform).join("|")
-    );
-    await page.waitForFunction(
-      (start) =>
-        [...document.querySelectorAll(".staircase-slot")].map((slot) => slot.style.transform).join("|") !== start,
-      staircaseStart,
-      { timeout: 5000 }
-    );
-    assert.ok(await firstStaircaseImage(), "staircase cards should show photos");
-    await page.emulateMedia({ reducedMotion: "no-preference" });
 
     // Video format cards open a centred, playable dialog that stops when closed.
     const firstVideo = page.locator(".video-format-card [data-video]").first();
@@ -375,7 +358,7 @@ const path = require("path");
     assert.strictEqual(contactSubmission.get("services"), "Social Media Management");
     assert.deepStrictEqual(appsScriptPageErrors, [], "Apps Script form mode should have no JavaScript errors");
 
-    console.log("PASSED: staircase, video player, brand grid, two-step intake validation, Netlify fallback, and Apps Script routing");
+    console.log("PASSED: hero photo layout, video player, brand grid, two-step intake validation, Netlify fallback, and Apps Script routing");
   } finally {
     await browser.close();
     await new Promise((resolve) => server.close(resolve));
