@@ -64,8 +64,10 @@
     />
 
     <link rel="stylesheet" href="css/base.css" />
-    <link rel="stylesheet" href="css/layout.css?v=13" />
-    <link rel="stylesheet" href="css/component.css?v=13" />
+    <link rel="stylesheet" href="css/layout.css?v=14" />
+    <link rel="stylesheet" href="css/component.css?v=14" />
+    <link rel="preload" as="image" href="assets/images/hero-bg.webp" media="(min-width: 769px)" />
+    <link rel="preload" as="image" href="assets/images/hero-bg-mobile.webp" media="(max-width: 768px)" />
     <link rel="stylesheet" href="css/animations.css" />
 
   </head>
@@ -100,7 +102,6 @@
 
     <main id="main-content" tabindex="-1">
       <section class="hero" id="home">
-        <div class="staircase-carousel staircase-carousel--hero" data-staircase-carousel data-frame-count="44" aria-hidden="true"></div>
         <div class="container hero-grid">
           <div class="hero-text reveal">
             <span class="eyebrow">Calming the Chaos</span>
@@ -958,10 +959,9 @@
       }
     </script>
     <script src="js/animations.js"></script>
-    <script src="js/main.js?v=13"></script>
+    <script src="js/main.js?v=14"></script>
     <script src="js/inquiry-forms.js"></script>
 
     <div class="process-blur-overlay"></div>
-    <script src="js/staircase-carousel.js?v=13"></script>
   </body>
 </html>

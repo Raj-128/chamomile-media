@@ -8,9 +8,48 @@
   isolation: isolate;
   overflow: hidden;
   color-scheme: light;
+  background: #22323c;
+}
+
+/* Full-bleed photo with a slow zoom; the brand-tinted overlay keeps text readable. */
+.hero::before,
+.hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.hero::before {
+  background: url("../assets/images/hero-bg.webp") center / cover no-repeat;
+  animation: hero-zoom 24s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.hero::after {
   background:
-    radial-gradient(ellipse at 50% 44%, rgba(255, 255, 255, 0.96), transparent 56%),
-    linear-gradient(180deg, #f8f7f4, #edeae4);
+    radial-gradient(60% 70% at 85% 15%, rgba(var(--brand-accent-rgb), 0.24), transparent 60%),
+    linear-gradient(100deg, rgba(var(--ink-rgb), 0.92) 0%, rgba(var(--ink-rgb), 0.78) 42%, rgba(var(--brand-primary-rgb), 0.55) 100%);
+}
+
+@keyframes hero-zoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+
+@media (max-width: 768px) {
+  .hero::before {
+    background-image: url("../assets/images/hero-bg-mobile.webp");
+  }
+
+  .hero::after {
+    background: linear-gradient(180deg, rgba(var(--ink-rgb), 0.9) 0%, rgba(var(--ink-rgb), 0.8) 55%, rgba(var(--brand-primary-rgb), 0.7) 100%);
+  }
 }
 
 .hero-grid {
@@ -26,14 +65,7 @@
 .hero-text {
   position: relative;
   z-index: 3;
-  max-width: 560px;
-  padding: clamp(18px, 2.4vw, 30px);
-  border: 1px solid rgba(255, 255, 255, 0.82);
-  border-radius: 26px;
-  background: rgba(255, 253, 249, 0.94);
-  box-shadow: 0 18px 46px rgba(var(--ink-rgb), 0.1);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  max-width: 640px;
   text-align: left;
 }
 
@@ -42,13 +74,6 @@
   width: min(100%, 420px);
   justify-self: end;
   isolation: isolate;
-}
-
-/* Wide screens: nudge the form into the side margin to widen the staircase gap. */
-@media (min-width: 1281px) {
-  .hero-visual {
-    margin-right: calc(-1 * min((100vw - 1280px) / 2, 140px));
-  }
 }
 
 .client-marquee-section {
