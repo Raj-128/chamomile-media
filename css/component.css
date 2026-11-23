@@ -87,7 +87,10 @@
 }
 
 .section-title {
-  font-size: clamp(2rem, 3vw, 2.6rem);
+  font-size: clamp(2.3rem, 4.2vw, 3.6rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.04;
   margin-bottom: 28px;
 }
 
@@ -2165,4 +2168,85 @@
   .process-step:focus-visible {
     will-change: transform;
   }
+}
+
+/* Running brand line under the hero (inspired by editorial agency sites). */
+.brand-ticker {
+  overflow: hidden;
+  padding: 16px 0;
+  background: var(--green-main);
+  color: #fff;
+}
+
+.brand-ticker__track {
+  display: flex;
+  width: max-content;
+  animation: brand-ticker 38s linear infinite;
+}
+
+.brand-ticker__track span {
+  padding: 0 18px;
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 1.6vw, 1.3rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.brand-ticker__copy {
+  display: contents;
+}
+
+.brand-ticker__dot {
+  color: var(--amber-soft);
+}
+
+@keyframes brand-ticker {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Full-width statement between sections. */
+.statement {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(90px, 14vw, 170px) 0;
+  text-align: center;
+  background:
+    radial-gradient(40% 60% at 15% 20%, rgba(var(--brand-accent-rgb), 0.28), transparent 70%),
+    radial-gradient(45% 60% at 85% 80%, rgba(var(--brand-primary-rgb), 0.3), transparent 70%),
+    radial-gradient(35% 50% at 70% 15%, rgba(var(--brand-petal-rgb), 0.7), transparent 70%),
+    var(--bg-main);
+}
+
+.statement__eyebrow {
+  margin: 0 0 18px;
+  color: var(--green-main);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.statement__text {
+  margin: 0;
+  color: var(--text-main);
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 8vw, 6.4rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.statement__text span {
+  color: var(--green-main);
+}
+
+.statement__sub {
+  max-width: 520px;
+  margin: 22px auto 0;
+  color: var(--text-muted);
+  font-size: 1.05rem;
 }
